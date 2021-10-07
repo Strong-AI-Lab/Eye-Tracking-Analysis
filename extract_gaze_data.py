@@ -1,17 +1,10 @@
 import pandas as pd
 from os import scandir, makedirs, path
 from xlsx2csv import Xlsx2csv
+from utils import create_output_dir
 
 INPUT_DIR = "data"
 OUTPUT_DIR = "output/gaze_data/"
-
-
-def create_output_dir(dataset):
-    output_path = path.join(OUTPUT_DIR, dataset)
-    if not path.isdir(output_path):
-        makedirs(output_path)
-
-    return output_path
 
 
 def process_participant(file, dataset=None):
@@ -54,7 +47,7 @@ def create_gaze_dataset(dataset=None, files=None):
 
 
 def create_sood_et_al_data(dataset):
-    output_path = create_output_dir(dataset)
+    output_path = create_output_dir(dataset, OUTPUT_DIR)
     output_file = f"{output_path}/study1_gaze_durations.csv"
 
     if path.isfile(output_file):
@@ -79,7 +72,7 @@ def create_sood_et_al_data(dataset):
 
 
 def create_mishra_sarcasm_data(dataset):
-    output_path = create_output_dir(dataset)
+    output_path = create_output_dir(dataset, OUTPUT_DIR)
     output_file = f"{output_path}/gaze_durations.csv"
 
     if path.isfile(output_file):
@@ -91,7 +84,7 @@ def create_mishra_sarcasm_data(dataset):
 
 
 def create_geco_data(dataset):
-    output_path = create_output_dir(dataset)
+    output_path = create_output_dir(dataset, OUTPUT_DIR)
     output_file = f"{output_path}/MonolingualReadingData.csv"
 
     if path.isfile(output_file):
