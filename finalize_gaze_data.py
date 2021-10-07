@@ -1,0 +1,218 @@
+import pandas as pd
+from os import path
+
+from utils import convert_plus_fill, create_output_dir
+
+INPUT_DIR = "data/"
+OUTPUT_DIR = "output/normalized_gaze_data/"
+GAZE_DIR = "output/gaze_data/"
+TEXT_DIR = "output/text_data/"
+SOOD_DATASET = "sood_et_al_2020"
+SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
+GECO_DATASET = "GECO"
+
+
+def modify_gaze_df(gaze_df, dataset):
+    if dataset == SOOD_DATASET:
+        gaze_df["PARAGRAPH_ID"] = gaze_df["Presented Stimulus name"].apply(lambda s: s.split(".")[0])
+        gaze_df["WORD_ID"] = gaze_df["PARAGRAPH_ID"] + "-" + gaze_df["word_index"].astype(str)
+
+    if dataset == SARCASM_DATASET:
+        gaze_df["PARAGRAPH_ID"] = gaze_df["Text_ID"]
+        gaze_df["WORD_ID"] = gaze_df["PARAGRAPH_ID"].astype(str) + "-" + gaze_df["word_index"].astype(str)
+
+    return gaze_df
+
+
+def modify_words_df(words_df):
+    words_df["PARAGRAPH_ID"] = words_df["PARAGRAPH_ID"].astype(str)
+    words_df["INDEX"] = words_df["WORD_ID"].apply(lambda s: s.split("-")[-1]).astype(int)
+
+    return words_df
+
+
+def merge_word_data(gaze_df, words_df, dataset):
+    df = pd.merge(gaze_df, words_df, on="WORD_ID", how="outer")
+
+    if dataset == SOOD_DATASET:
+        df["Participant"] = df['Participant name'].unique()[0]
+        df["Gaze event duration"] = df["Gaze event duration"].fillna(0)
+        df = df.drop(["index", "Participant name", "Recording name", "Presented Stimulus name", "word_index", "word",
+                      "PARAGRAPH_ID_x"], axis=1)
+
+    if dataset == SARCASM_DATASET:
+        df["Participant"] = df['Participant_ID'].unique()[0]
+        df["Gaze event duration"] = df["Fixation_Duration"].fillna(0)
+        df = df.drop(["Participant_ID", "word_index", "PARAGRAPH_ID_x"], axis=1)
+
+    df = df.sort_values("INDEX")
+    df = df.iloc[:words_df.shape[0]]
+
+    return df
+
+
+def merge_word_data(gaze_df, words_df):
+    df = pd.merge(gaze_df, words_df, on="WORD_ID", how="outer")
+    df["Participant"] = df['Participant_ID'].unique()[0]
+    df["Gaze event duration"] = df["Fixation_Duration"].fillna(0)
+    df = df.drop(["Participant_ID", "word_index", "PARAGRAPH_ID_x"], axis=1)
+    df = df.iloc[:words_df.shape[0]]
+
+    return df
+
+
+def combine_dfs(gaze_df, words_df, dataset):
+    dfs = []
+    gaze_df = modify_gaze_df(gaze_df, dataset)
+    words_df = modify_words_df(words_df)
+
+    if dataset == SOOD_DATASET:
+        participant_col = "Participant name"
+
+    if dataset == SARCASM_DATASET:
+        participant_col = "Participant_ID"
+
+    for paragraph_id in words_df["PARAGRAPH_ID"].unique():
+        print(paragraph_id)
+        words_mask = words_df["PARAGRAPH_ID"] == paragraph_id
+        current_words = words_df[words_mask]
+
+        for name in gaze_df[participant_col].unique():
+            gaze_mask = (gaze_df[participant_col] == name) & (gaze_df["PARAGRAPH_ID"] == int(paragraph_id))
+
+            if gaze_mask.sum() == 0:
+                continue
+
+            current_gaze = gaze_df[gaze_mask]
+            dfs.append(merge_word_data(current_gaze, current_words))
+
+    df = pd.concat(dfs)
+
+    return df
+
+
+def normalize_gaze_data(df, dataset, paragraph=False):
+    normalised_dfs = []
+    normal_col = "SENTENCE_ID"
+
+    if dataset == GECO_DATASET:
+        participant_col = "PP_NR"
+
+    if dataset in [SARCASM_DATASET, SOOD_DATASET]:
+        participant_col = "Participant"
+
+    if paragraph:
+        normal_col = "PARAGRAPH_ID"
+
+    for participant in df[participant_col].unique():
+        print(participant)
+        mask = df[participant_col] == participant
+        person_df = df[mask].select_dtypes(exclude="object")
+        norm_data_id = df[mask][normal_col].unique()
+        pp_ids = df[mask][normal_col]
+
+        for data_id in norm_data_id:
+            data_mask = pp_ids == data_id
+            current_df = person_df[data_mask]
+            print(data_id)
+            normalised_dfs.append(current_df / current_df.sum())
+
+    df = pd.concat(normalised_dfs)
+
+    return df
+
+
+def create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file):
+    sentence_df = normalize_gaze_data(df, dataset)
+    sentence_df.to_csv(sentence_output_file, index=False)
+    print(f"{sentence_output_file} done")
+
+    paragraph_df = normalize_gaze_data(df, dataset, paragraph=True)
+    paragraph_df.to_csv(paragraph_output_file, index=False)
+    print(f"{paragraph_output_file} done")
+
+
+def normalize_sood_et_al_gaze_data(dataset):
+    output_path = create_output_dir(dataset, OUTPUT_DIR)
+    sentence_output_file = f"{output_path}/normed_study1_sentences.csv"
+    paragraph_output_file = f"{output_path}/normed_study1_paragraphs.csv"
+
+    if path.isfile(sentence_output_file) and path.isfile(paragraph_output_file):
+        print(f"{output_path} files already exist - skipping creation")
+    else:
+        study_df = pd.read_csv(f"{GAZE_DIR}{dataset}/study1_gaze_durations.csv")
+        study_words_df = pd.read_csv(f"{TEXT_DIR}{dataset}/study1_words.csv")
+        df = combine_dfs(study_df, study_words_df, dataset)
+        create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file)
+
+    sentence_output_file = f"{output_path}/normed_study2_sentences.csv"
+    paragraph_output_file = f"{output_path}/normed_study2_paragraphs.csv"
+
+    if path.isfile(sentence_output_file) and path.isfile(paragraph_output_file):
+        print(f"{output_path} files already exist - skipping creation")
+    else:
+        study_df = pd.read_csv(f"{GAZE_DIR}{dataset}/study2_gaze_durations.csv")
+        study_words_df = pd.read_csv(f"{TEXT_DIR}{dataset}/study2_words.csv")
+        df = combine_dfs(study_df, study_words_df, dataset)
+        create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file)
+
+
+def normalize_mishra_sarcasm_gaze_data(dataset):
+    output_path = create_output_dir(dataset, OUTPUT_DIR)
+    sentence_output_file = f"{output_path}/normed_sentences.csv"
+    paragraph_output_file = f"{output_path}/normed_paragraphs.csv"
+
+    if path.isfile(sentence_output_file) and path.isfile(paragraph_output_file):
+        print(f"{output_path} files already exist - skipping creation")
+    else:
+        study_df = pd.read_csv(f"{GAZE_DIR}{dataset}/gaze_durations.csv")
+        study_words_df = pd.read_csv(f"{TEXT_DIR}{dataset}/words.csv")
+        df = combine_dfs(study_df, study_words_df, dataset)
+        create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file)
+
+
+def normalize_geco_gaze_data(dataset):
+    output_path = create_output_dir(dataset, OUTPUT_DIR)
+    sentence_output_file = f"{output_path}/normed_sentences.csv"
+    paragraph_output_file = f"{output_path}/normed_paragraphs.csv"
+
+    if path.isfile(sentence_output_file) and path.isfile(paragraph_output_file):
+        print(f"{output_path} files already exist - skipping creation")
+    else:
+        mono_df = pd.read_csv(f"{GAZE_DIR}{dataset}/MonolingualReadingData.csv")
+        bilingual_df = pd.read_csv(f"{GAZE_DIR}{dataset}/L2ReadingData.csv")
+        df = pd.concat([bilingual_df, mono_df])
+        keep_cols = [col for col in df.columns[11:] if
+                     any(word in col for word in ["%", "COUNT", "DURATION", "AVERAGE", "SKIP"])]
+        keep_cols = list(df.columns[:11]) + keep_cols
+        df = df[keep_cols]
+
+        for col in df.columns[11:]:
+            df[col] = convert_plus_fill(df[col])
+
+        df.loc[df["WORD"].isnull(), "WORD"] = "null"
+        sentence_df = pd.read_csv("Transformer Data/English_EyeTrack_plus_bert-base-cased-True.csv",
+                                  usecols=['WORD_ID', "SENTENCE_ID"])
+        df = pd.merge(df, sentence_df, on="WORD_ID").sort_values(["PP_NR", "SENTENCE_ID"])
+        create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file)
+
+
+def main():
+    if not path.isdir(path.join(INPUT_DIR, SOOD_DATASET)):
+        print(f"Cannot find {SOOD_DATASET} - skipping creation")
+    else:
+        normalize_sood_et_al_gaze_data(SOOD_DATASET)
+
+    if not path.isdir(path.join(INPUT_DIR, SARCASM_DATASET)):
+        print(f"Cannot find {SARCASM_DATASET} - skipping creation")
+    else:
+        normalize_mishra_sarcasm_gaze_data(SARCASM_DATASET)
+
+    if not path.isdir(path.join(INPUT_DIR, GECO_DATASET)):
+        print(f"Cannot find {GECO_DATASET} - skipping creation")
+    else:
+        normalize_geco_gaze_data(GECO_DATASET)
+
+
+if __name__ == "__main__":
+    main()

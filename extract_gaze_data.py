@@ -1,13 +1,16 @@
 import pandas as pd
-from os import scandir, makedirs, path
+from os import scandir, path
 from xlsx2csv import Xlsx2csv
 from utils import create_output_dir
 
-INPUT_DIR = "data"
+INPUT_DIR = "data/"
 OUTPUT_DIR = "output/gaze_data/"
+SOOD_DATASET = "sood_et_al_2020"
+SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
+GECO_DATASET = "GECO"
 
 
-def process_participant(file, dataset=None):
+def process_participant_gaze(file, dataset=None):
     df = pd.read_csv(file,
                      sep="\t",
                      usecols=["Recording name", "Presented Stimulus name", "word_index", "word", "Gaze event duration"],
@@ -26,16 +29,16 @@ def create_gaze_dataset(dataset=None, files=None):
     dfs = []
     df = None
 
-    if dataset == "Mishra/Eye-tracking_and_SA-II_released_dataset":
+    if dataset == SARCASM_DATASET:
         df = pd.read_csv("data/Mishra/Eye-tracking_and_SA-II_released_dataset/Fixation_sequence.csv")
         df = df[~(df["Word_ID"] == 1)]
         df["word_index"] = df["Word_ID"] - 2
         df = df.groupby(["Participant_ID", "Text_ID", "word_index", "Word"]).sum()['Fixation_Duration'].reset_index()
 
-    if dataset == "sood_et_al_2020":
+    if dataset == SOOD_DATASET:
         for file in files:
             try:
-                df = process_participant(file, dataset=dataset)
+                df = process_participant_gaze(file, dataset=dataset)
                 dfs.append(df)
                 print(file)
             except Exception as e:
@@ -46,7 +49,7 @@ def create_gaze_dataset(dataset=None, files=None):
     return df
 
 
-def create_sood_et_al_data(dataset):
+def create_sood_et_al_gaze_data(dataset):
     output_path = create_output_dir(dataset, OUTPUT_DIR)
     output_file = f"{output_path}/study1_gaze_durations.csv"
 
@@ -71,7 +74,7 @@ def create_sood_et_al_data(dataset):
         print(f"{output_file} done")
 
 
-def create_mishra_sarcasm_data(dataset):
+def create_mishra_sarcasm_gaze_data(dataset):
     output_path = create_output_dir(dataset, OUTPUT_DIR)
     output_file = f"{output_path}/gaze_durations.csv"
 
@@ -83,7 +86,7 @@ def create_mishra_sarcasm_data(dataset):
         print(f"{output_file} done")
 
 
-def create_geco_data(dataset):
+def create_geco_gaze_data(dataset):
     output_path = create_output_dir(dataset, OUTPUT_DIR)
     output_file = f"{output_path}/MonolingualReadingData.csv"
 
@@ -103,24 +106,20 @@ def create_geco_data(dataset):
 
 
 def main():
-    sood_dataset = "sood_et_al_2020"
-    sarcasm_dataset = "Mishra/Eye-tracking_and_SA-II_released_dataset"
-    geco_dataset = "GECO"
-
-    if not path.isdir(path.join(INPUT_DIR, sood_dataset)):
-        print(f"Cannot find {sood_dataset} - skipping creation")
+    if not path.isdir(path.join(INPUT_DIR, SOOD_DATASET)):
+        print(f"Cannot find {SOOD_DATASET} - skipping creation")
     else:
-        create_sood_et_al_data(sood_dataset)
+        create_sood_et_al_gaze_data(SOOD_DATASET)
 
-    if not path.isdir(path.join(INPUT_DIR, sarcasm_dataset)):
-        print(f"Cannot find {sarcasm_dataset} - skipping creation")
+    if not path.isdir(path.join(INPUT_DIR, SARCASM_DATASET)):
+        print(f"Cannot find {SARCASM_DATASET} - skipping creation")
     else:
-        create_mishra_sarcasm_data(sarcasm_dataset)
+        create_mishra_sarcasm_gaze_data(SARCASM_DATASET)
 
-    if not path.isdir(path.join(INPUT_DIR, geco_dataset)):
-        print(f"Cannot find {geco_dataset} - skipping creation")
+    if not path.isdir(path.join(INPUT_DIR, GECO_DATASET)):
+        print(f"Cannot find {GECO_DATASET} - skipping creation")
     else:
-        create_geco_data(geco_dataset)
+        create_geco_gaze_data(GECO_DATASET)
 
 
 if __name__ == "__main__":

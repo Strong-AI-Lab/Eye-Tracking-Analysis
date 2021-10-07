@@ -3,18 +3,13 @@ import glob
 from collections import OrderedDict
 from os import path
 from xlsx2csv import Xlsx2csv
-from utils import create_output_dir
+from utils import create_output_dir, get_text
 
-INPUT_DIR = "data"
+INPUT_DIR = "data/"
 OUTPUT_DIR = "output/text_data/"
-
-
-def get_text(filepath):
-    text_file = open(filepath, "r")
-    text = text_file.read()
-    text_file.close()
-
-    return text
+SOOD_DATASET = "sood_et_al_2020"
+SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
+GECO_DATASET = "GECO"
 
 
 def process_text(text_id, text):
@@ -56,13 +51,13 @@ def extract_format_text(dataset=None, texts=None):
     word_dfs = []
     sentence_dfs = []
 
-    if dataset == "sood_et_al_2020":
+    if dataset == SOOD_DATASET:
         for filepath in texts:
             text_df, sentence_df = create_text_dfs(filepath)
             word_dfs.append(text_df)
             sentence_dfs.append(sentence_df)
 
-    if dataset == "Mishra/Eye-tracking_and_SA-II_released_dataset":
+    if dataset == SARCASM_DATASET:
         raw_sentence_df = pd.read_csv(f"{INPUT_DIR}/{dataset}/text_and_annorations.csv",
                                       index_col=0)
         for text_id, text in raw_sentence_df["Text"].iteritems():
@@ -76,7 +71,7 @@ def extract_format_text(dataset=None, texts=None):
     return words_df, sentences_df
 
 
-def create_sood_et_al_data(dataset):
+def create_sood_et_al_text_data(dataset):
     output_path = create_output_dir(dataset, OUTPUT_DIR)
     words_output_file = f"{output_path}/study1_words.csv"
     sentences_output_file = f"{output_path}/study1_sentences.csv"
@@ -106,7 +101,7 @@ def create_sood_et_al_data(dataset):
         print(f"{output_path} study 2 files done")
 
 
-def create_mishra_sarcasm_data(dataset):
+def create_mishra_sarcasm_text_data(dataset):
     output_path = create_output_dir(dataset, OUTPUT_DIR)
     words_output_file = f"{output_path}/words.csv"
     sentences_output_file = f"{output_path}/sentences.csv"
@@ -120,7 +115,7 @@ def create_mishra_sarcasm_data(dataset):
         print(f"{output_path} files done")
 
 
-def create_geco_data(dataset):
+def create_geco_text_data(dataset):
     output_path = create_output_dir(dataset, OUTPUT_DIR)
     output_file = f"{output_path}/EnglishMaterialALL.csv"
 
@@ -130,7 +125,7 @@ def create_geco_data(dataset):
         Xlsx2csv("data/GECO/EnglishMaterial.xlsx", outputencoding="utf-8").convert(f"{output_file[:-4]}_pre-clean.csv",
                                                                                    sheetid=1)
 
-        #Clean the English data file
+        # Clean the English data file
         original_df = pd.read_csv(f"{output_file[:-4]}_pre-clean.csv")
         original_df.loc[original_df['WORD_ID'] == "2-28-46", "WORD"] = "null"
         original_df.loc[original_df['WORD_ID'] == "1-41-67", "SENTENCE_ID"] = "1-281"
@@ -138,8 +133,8 @@ def create_geco_data(dataset):
         part_one_error_start = 3170
         part_one_error_end = 14338
         original_df.loc[part_one_error_start + 1:part_one_error_end - 1, "SENTENCE_ID"] = original_df.loc[
-                                                                                      part_one_error_start:part_one_error_end - 2,
-                                                                                      "SENTENCE_ID"].values
+                                                                                          part_one_error_start:part_one_error_end - 2,
+                                                                                          "SENTENCE_ID"].values
         original_df.loc[original_df['WORD_ID'] == "1-41-60", "SENTENCE_ID"] = "1-280"
         original_df.loc[original_df['WORD_ID'] == "1-45-24", "SENTENCE_ID"] = "1-321"
         original_df.loc[original_df['WORD_ID'] == "1-46-30", "SENTENCE_ID"] = "1-328"
@@ -226,10 +221,8 @@ def create_geco_data(dataset):
         original_df.loc[original_df['WORD_ID'] == "3-101-92", "SENTENCE_ID"] = "3-982"
         original_df.loc[original_df['WORD_ID'] == "3-101-73", "SENTENCE_ID"] = "3-981"
         original_df.loc[original_df['WORD_ID'] == "3-101-74", "SENTENCE_ID"] = "3-981"
-
         original_df.loc[original_df['WORD_ID'] == "3-20-35", "WORD"] = "tack"
         original_df.loc[original_df['WORD_ID'] == "4-86-98", "WORD"] = "Poison"
-
         original_df = original_df.drop(
             [14273, 14274, 14275, 14276, 29440, 35158, 35159, 35160, 35161, 35162, 35163, 35164, 35165,
              35166, 35167, 35168, 35169, 35170, 35171, 35172, 40982, 54360, 54361])
@@ -247,24 +240,20 @@ def create_geco_data(dataset):
 
 
 def main():
-    sood_dataset = "sood_et_al_2020"
-    sarcasm_dataset = "Mishra/Eye-tracking_and_SA-II_released_dataset"
-    geco_dataset = "GECO"
-
-    if not path.isdir(path.join(INPUT_DIR, sood_dataset)):
-        print(f"Cannot find {sood_dataset} - skipping creation")
+    if not path.isdir(path.join(INPUT_DIR, SOOD_DATASET)):
+        print(f"Cannot find {SOOD_DATASET} - skipping creation")
     else:
-        create_sood_et_al_data(sood_dataset)
+        create_sood_et_al_text_data(SOOD_DATASET)
 
-    if not path.isdir(path.join(INPUT_DIR, sarcasm_dataset)):
-        print(f"Cannot find {sarcasm_dataset} - skipping creation")
+    if not path.isdir(path.join(INPUT_DIR, SARCASM_DATASET)):
+        print(f"Cannot find {SARCASM_DATASET} - skipping creation")
     else:
-        create_mishra_sarcasm_data(sarcasm_dataset)
+        create_mishra_sarcasm_text_data(SARCASM_DATASET)
 
-    if not path.isdir(path.join(INPUT_DIR, geco_dataset)):
-        print(f"Cannot find {geco_dataset} - skipping creation")
+    if not path.isdir(path.join(INPUT_DIR, GECO_DATASET)):
+        print(f"Cannot find {GECO_DATASET} - skipping creation")
     else:
-        create_geco_data(geco_dataset)
+        create_geco_text_data(GECO_DATASET)
 
 
 if __name__ == "__main__":
