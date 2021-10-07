@@ -1,5 +1,6 @@
 import pandas as pd
 from os import scandir, makedirs, path
+from xlsx2csv import Xlsx2csv
 
 INPUT_DIR = "data"
 OUTPUT_DIR = "output/gaze_data/"
@@ -83,9 +84,29 @@ def create_mishra_sarcasm_data(dataset):
         print(f"{output_file} done")
 
 
+def create_geco_data(dataset):
+    output_path = create_output_dir(dataset)
+    output_file = f"{output_path}/MonolingualReadingData.csv"
+
+    if path.isfile(output_file):
+        print(f"{output_file} already exists - skipping creation")
+    else:
+        Xlsx2csv("data/GECO/MonolingualReadingData.xlsx", outputencoding="utf-8").convert(output_file, sheetid=1)
+        print(f"{output_file} done")
+
+    output_file = f"{output_path}/L2ReadingData.csv"
+
+    if path.isfile(output_file):
+        print(f"{output_file} already exists - skipping creation")
+    else:
+        Xlsx2csv("data/GECO/L2ReadingData.xlsx", outputencoding="utf-8").convert(output_file, sheetid=1)
+        print(f"{output_file} done")
+
+
 def main():
     sood_dataset = "sood_et_al_2020"
     sarcasm_dataset = "Mishra/Eye-tracking_and_SA-II_released_dataset"
+    geco_dataset = "GECO"
 
     if not path.isdir(path.join(INPUT_DIR, sood_dataset)):
         print(f"Cannot find {sood_dataset} - skipping creation")
@@ -96,6 +117,11 @@ def main():
         print(f"Cannot find {sarcasm_dataset} - skipping creation")
     else:
         create_mishra_sarcasm_data(sarcasm_dataset)
+        
+    if not path.isdir(path.join(INPUT_DIR, geco_dataset)):
+        print(f"Cannot find {geco_dataset} - skipping creation")
+    else:
+        create_geco_data(geco_dataset)
 
 
 if __name__ == "__main__":
