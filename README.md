@@ -1,4 +1,5 @@
 # EyeTrackingAnalysis
+There are currently errors with a few sood_et_al_2020 participants.
 
 This is the structure of the data directory.
 
