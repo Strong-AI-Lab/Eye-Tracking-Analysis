@@ -51,18 +51,9 @@ def merge_word_data(gaze_df, words_df, dataset):
     return df
 
 
-def merge_word_data(gaze_df, words_df):
-    df = pd.merge(gaze_df, words_df, on="WORD_ID", how="outer")
-    df["Participant"] = df['Participant_ID'].unique()[0]
-    df["Gaze event duration"] = df["Fixation_Duration"].fillna(0)
-    df = df.drop(["Participant_ID", "word_index", "PARAGRAPH_ID_x"], axis=1)
-    df = df.iloc[:words_df.shape[0]]
-
-    return df
-
-
 def combine_dfs(gaze_df, words_df, dataset):
     dfs = []
+    participant_col = ""
     gaze_df = modify_gaze_df(gaze_df, dataset)
     words_df = modify_words_df(words_df)
 
@@ -74,17 +65,21 @@ def combine_dfs(gaze_df, words_df, dataset):
 
     for paragraph_id in words_df["PARAGRAPH_ID"].unique():
         print(paragraph_id)
+
         words_mask = words_df["PARAGRAPH_ID"] == paragraph_id
         current_words = words_df[words_mask]
 
+        if dataset == SARCASM_DATASET:
+            paragraph_id = int(paragraph_id)
+
         for name in gaze_df[participant_col].unique():
-            gaze_mask = (gaze_df[participant_col] == name) & (gaze_df["PARAGRAPH_ID"] == int(paragraph_id))
+            gaze_mask = (gaze_df[participant_col] == name) & (gaze_df["PARAGRAPH_ID"] == paragraph_id)
 
             if gaze_mask.sum() == 0:
                 continue
 
             current_gaze = gaze_df[gaze_mask]
-            dfs.append(merge_word_data(current_gaze, current_words))
+            dfs.append(merge_word_data(current_gaze, current_words, dataset))
 
     df = pd.concat(dfs)
 
@@ -103,6 +98,9 @@ def normalize_gaze_data(df, dataset, paragraph=False):
 
     if paragraph:
         normal_col = "PARAGRAPH_ID"
+
+        if dataset in [SARCASM_DATASET, SOOD_DATASET]:
+            normal_col = "PARAGRAPH_ID_y"
 
     for participant in df[participant_col].unique():
         print(participant)
@@ -191,9 +189,10 @@ def normalize_geco_gaze_data(dataset):
             df[col] = convert_plus_fill(df[col])
 
         df.loc[df["WORD"].isnull(), "WORD"] = "null"
-        sentence_df = pd.read_csv("Transformer Data/English_EyeTrack_plus_bert-base-cased-True.csv",
+        sentence_df = pd.read_csv(f"{TEXT_DIR}{dataset}/EnglishMaterialALL.csv",
                                   usecols=['WORD_ID', "SENTENCE_ID"])
         df = pd.merge(df, sentence_df, on="WORD_ID").sort_values(["PP_NR", "SENTENCE_ID"])
+        df["PARAGRAPH_ID"] = df["WORD_ID"].apply(lambda s: "-".join(s.split("-")[:2]))
         create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file)
 
 
