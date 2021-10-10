@@ -1,0 +1,9 @@
+bert-base-uncased
+bert-base-cased
+bert-large-uncased
+bert-large-cased
+bert-base-multilingual-cased
+xlnet-base-cased
+xlnet-large-cased
+facebook/bart-base
+facebook/bart-large

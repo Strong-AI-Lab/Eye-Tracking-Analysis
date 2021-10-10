@@ -1,3 +1,4 @@
+import string
 import pandas as pd
 from os import path, makedirs
 
@@ -24,3 +25,8 @@ def convert_plus_fill(series, errors='coerce', fill=0):
         series = series.fillna(fill)
 
     return series
+
+
+def word_formatter(s):
+    s = s.translate(str.maketrans('', '', string.punctuation))
+    return s.lower()
