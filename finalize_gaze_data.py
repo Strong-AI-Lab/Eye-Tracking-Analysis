@@ -74,6 +74,7 @@ def combine_dfs(gaze_df, words_df, dataset):
 
         for name in gaze_df[participant_col].unique():
             print(name)
+            print(gaze_df["PARAGRAPH_ID"])
             gaze_mask = (gaze_df[participant_col] == name) & (gaze_df["PARAGRAPH_ID"] == paragraph_id)
 
             if gaze_mask.sum() == 0:
