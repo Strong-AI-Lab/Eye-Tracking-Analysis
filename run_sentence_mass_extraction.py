@@ -1,5 +1,5 @@
 import argparse
-from extract_transformer_attention import control_extraction
+from extract_transformer_attention_by_sentence import control_extraction
 
 data_list = None
 model_list = None

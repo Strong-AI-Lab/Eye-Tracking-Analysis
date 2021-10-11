@@ -8,7 +8,7 @@ from utils import word_formatter, create_output_dir
 from collections import OrderedDict
 
 INPUT_DIR = "output/text_data/"
-OUTPUT_DIR = "output/attention_data/"
+OUTPUT_DIR = "output/attention_data/sentences/"
 SOOD_DATASET = "sood_et_al_2020"
 SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
