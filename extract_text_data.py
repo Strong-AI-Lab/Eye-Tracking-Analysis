@@ -79,7 +79,7 @@ def create_sood_et_al_text_data(dataset):
     if path.isfile(words_output_file) and path.isfile(sentences_output_file):
         print(f"{output_path} study 1 files already exist - skipping creation")
     else:
-        texts = [text for text in glob.glob(f'{INPUT_DIR}/sood_et_al_2020/release24_2/stimuli/study1/exp3/**/*.txt',
+        texts = [text for text in glob.glob(f'{INPUT_DIR}/{dataset}/release24_2/stimuli/study1/exp3/**/*.txt',
                                             recursive=True) if "QA" not in text]
         words_df, sentences_df = extract_format_text(dataset=dataset, texts=texts)
         words_df.to_csv(words_output_file, index=False)
@@ -93,7 +93,7 @@ def create_sood_et_al_text_data(dataset):
     if path.isfile(words_output_file) and path.isfile(sentences_output_file):
         print(f"{output_path} study 2 files already exist - skipping creation")
     else:
-        texts = [text for text in glob.glob(f'{INPUT_DIR}/Sood_et_al_2020/release24_2/stimuli/study2/**/*.txt',
+        texts = [text for text in glob.glob(f'{INPUT_DIR}/{dataset}/release24_2/stimuli/study2/**/*.txt',
                                             recursive=True)]
         words_df, sentences_df = extract_format_text(dataset=dataset, texts=texts)
         words_df.to_csv(words_output_file, index=False)
