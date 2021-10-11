@@ -35,7 +35,7 @@ def process_text(text_id, text):
 
 def create_text_dfs(data, text=None):
     if text is None:
-        text_id = data.split("\\")[-1][:-4]
+        text_id = data.split("/")[-1][:-4]
         text = get_text(data)
     else:
         text_id = data
