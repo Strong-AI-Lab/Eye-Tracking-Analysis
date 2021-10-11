@@ -11,7 +11,7 @@ args = parser.parse_args()
 
 if args.data == "all":
     data_file = open("texts-english.txt", "r")
-    data_list = [data.replace("\n", "").lower() for data in data_file.readlines()]
+    data_list = [data.replace("\n", "") for data in data_file.readlines()]
     data_file.close()
 else:
     data_list = [args.data.lower()]
