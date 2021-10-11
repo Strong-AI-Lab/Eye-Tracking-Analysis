@@ -81,6 +81,7 @@ def create_sood_et_al_text_data(dataset):
     else:
         texts = [text for text in glob.glob(f'{INPUT_DIR}/Sood_et_al_2020/release24_2/stimuli/study1/exp3/**/*.txt',
                                             recursive=True) if "QA" not in text]
+        print(texts)
         words_df, sentences_df = extract_format_text(dataset=dataset, texts=texts)
         words_df.to_csv(words_output_file, index=False)
         sentences_df.to_csv(sentences_output_file, index=False)
