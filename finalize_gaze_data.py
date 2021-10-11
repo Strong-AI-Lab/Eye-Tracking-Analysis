@@ -105,13 +105,13 @@ def normalize_gaze_data(df, dataset, paragraph=False):
     for participant in df[participant_col].unique():
         print(participant)
         mask = df[participant_col] == participant
-        person_df = df[mask].select_dtypes(exclude="object")
+        person_df = df[mask]
         norm_data_id = df[mask][normal_col].unique()
         pp_ids = df[mask][normal_col]
 
         for data_id in norm_data_id:
             data_mask = pp_ids == data_id
-            current_df = person_df[data_mask]
+            current_df = person_df[data_mask].set_index(["WORD_ID", participant_col]).select_dtypes(exclude="object")
             print(data_id)
             normalised_dfs.append(current_df / current_df.sum())
 
@@ -122,11 +122,11 @@ def normalize_gaze_data(df, dataset, paragraph=False):
 
 def create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file):
     sentence_df = normalize_gaze_data(df, dataset)
-    sentence_df.to_csv(sentence_output_file, index=False)
+    sentence_df.to_csv(sentence_output_file)
     print(f"{sentence_output_file} done")
 
     paragraph_df = normalize_gaze_data(df, dataset, paragraph=True)
-    paragraph_df.to_csv(paragraph_output_file, index=False)
+    paragraph_df.to_csv(paragraph_output_file)
     print(f"{paragraph_output_file} done")
 
 

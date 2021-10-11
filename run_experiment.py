@@ -1,4 +1,5 @@
 import argparse
+from extract_transformer_attention import control_extraction
 
 data_list = None
 model_list = None
@@ -24,10 +25,9 @@ else:
 
 
 def main():
-    if "geco" in data_list:
-        print("GECO is here")
-
-    print(model_list)
+    for model in model_list:
+        for dataset in data_list:
+            control_extraction(model, dataset)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,10 @@
+import argparse
+from os import path
 import torch
 import pandas as pd
 import numpy as np
 from transformers import AutoTokenizer, AutoModelWithLMHead
-from utils import word_formatter
+from utils import word_formatter, create_output_dir
 from collections import OrderedDict
 
 INPUT_DIR = "output/text_data/"
@@ -10,6 +12,11 @@ OUTPUT_DIR = "output/normalized_attention_data/"
 SOOD_DATASET = "sood_et_al_2020"
 SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-d", "--data", default="GECO")
+parser.add_argument("-m", "--model", default="bert-base-cased")
+args = parser.parse_args()
 
 
 def load_models(model_name):
@@ -22,7 +29,7 @@ def load_models(model_name):
 def load_data(sentence_file, word_file):
     sentence_df = pd.read_csv(sentence_file)
     word_df = pd.read_csv(word_file)
-    word_df['norm word'] = word_df['WORD'].apply(word_formatter)
+    word_df['norm word'] = word_df['WORD'].astype(str).apply(word_formatter)
 
     return sentence_df, word_df
 
@@ -71,9 +78,9 @@ def process_attention_scores(inputs, model, special_tokens=True):
     return processed_df
 
 
-def get_attention_scores(sample, tokenizer, special_tokens=True):
+def get_attention_scores(sample, model, tokenizer, special_tokens=True):
     inputs, tokens_per_word = process_sample(sample, tokenizer, special_tokens=special_tokens)
-    attention_scores = process_attention_scores(inputs, special_tokens=special_tokens)
+    attention_scores = process_attention_scores(inputs, model, special_tokens=special_tokens)
 
     index = 0
     final_scores = []
@@ -84,10 +91,8 @@ def get_attention_scores(sample, tokenizer, special_tokens=True):
         scores = attention_scores.iloc[index:index + tokens]
         index = index + tokens
 
-        current_word_scores['min'] = scores.apply(np.min)
         current_word_scores['max'] = scores.apply(np.max)
         current_word_scores['mean'] = scores.apply(np.mean)
-        current_word_scores['median'] = scores.apply(np.median)
         current_word_scores['sum'] = scores.apply(np.sum)
 
         for key, score in current_word_scores.items():
@@ -115,9 +120,9 @@ def get_final_df(final_df, orignal_df):
     return final_df[mask]
 
 
-def create_df_from_sentence(sentence_id, sentence_df, word_df, mask, tokenizer, special_tokens=True):
+def create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer, special_tokens=True):
     sentence = sentence_df.loc[sentence_df['SENTENCE_ID'] == sentence_id, 'SENTENCE'].iloc[0]
-    attention_scores = get_attention_scores(sentence, tokenizer, special_tokens=special_tokens)
+    attention_scores = get_attention_scores(sentence, model, tokenizer, special_tokens=special_tokens)
 
     original_df = word_df[mask]
 
@@ -141,20 +146,108 @@ def create_df_from_sentence(sentence_id, sentence_df, word_df, mask, tokenizer, 
             df = df.drop(to_drop)
             new_idx = new_idx + 1
 
-    assert (df['WORD'].reset_index(drop=True) == original_df['norm word'].reset_index(drop=True)).sum() == \
+    df = df.reset_index(drop=True)
+    original_df = original_df.reset_index(drop=True)
+
+    if df.shape[0] > original_df.shape[0]:
+        df = df.loc[:original_df.shape[0] - 1]
+    elif df.shape[0] < original_df.shape[0]:
+        original_df = original_df.loc[:df.shape[0] - 1]
+
+    assert (df['WORD'] == original_df['norm word']).sum() == \
            original_df.shape[0]
     df["WORD_ID"] = original_df["WORD_ID"].reset_index(drop=True)
 
     return df
 
 
-def run_experiment(model_name, data):
-    pass
+def normalize_df(df):
+    normalised_dfs = []
+    for sentence in df["SENTENCE_ID"].unique():
+        print(sentence)
+        mask = df["SENTENCE_ID"] == sentence
+        current_df = df[mask].set_index("WORD_ID", "SENTENCE_ID").select_dtypes(exclude="object")
+        normalised_dfs.append(current_df / current_df.sum())
+
+    normal_df = pd.concat(normalised_dfs)
+    normal_df.columns = [f"norm_{col}" for col in normal_df.columns]
+    df = pd.merge(df, normal_df, left_on="WORD_ID", right_index=True)
+
+    return df
+
+
+def run_extraction(model_name, dataset, sentence_file, word_file, output_file):
+    if path.isfile(output_file):
+        print(f"{output_file} already exists - skipping creation")
+    else:
+        tokenizer, model = load_models(model_name)
+        sentence_df, word_df = load_data(sentence_file, word_file)
+
+        dfs = []
+        errors = []
+
+        for i, sentence_id in sentence_df["SENTENCE_ID"].iteritems():
+            print(f"{i + 1} of {sentence_df.shape[0]}")
+            mask = word_df['SENTENCE_ID'] == sentence_id
+            if mask.sum() == 0:
+                errors.append(f"{sentence_id} - Zero!")
+                continue
+
+            try:
+                df = create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer)
+                dfs.append(df)
+
+            except Exception as e:
+                errors.append(f"{sentence_id} - {e}")
+
+        if len(errors) > 0:
+            output_path = create_output_dir(dataset, f"{OUTPUT_DIR}/errors/")
+            error_file = open(f"{output_path}/{model_name}.txt", "w")
+            for error in errors:
+                error_file.write(error + "\n")
+            error_file.close()
+
+        processed_df = pd.concat(dfs)
+        processed_df = pd.merge(word_df, processed_df, on="WORD_ID")
+        processed_df.to_csv(f"{output_file[:-4]}-pre_norm.csv")
+        final_df = normalize_df(processed_df)
+        final_df.to_csv(output_file)
+        print(f"{output_file} Done!")
+
+
+def control_extraction(model_name, dataset, special_tokens=True):
+    print(f"Model: {model_name}")
+    print(f"Dataset: {dataset}")
+    if dataset == GECO_DATASET:
+        output_path = create_output_dir(dataset, OUTPUT_DIR)
+        sentence_file = f"{INPUT_DIR}{dataset}/EnglishMaterialSENTENCE.csv"
+        word_file = f"{INPUT_DIR}{dataset}/EnglishMaterialALL.csv"
+        output_file = f"{output_path}/{model_name}-{special_tokens}.csv"
+        run_extraction(model_name, dataset, sentence_file, word_file, output_file)
+
+    if dataset == SOOD_DATASET:
+        output_path = create_output_dir(dataset, OUTPUT_DIR)
+        sentence_file = f"{INPUT_DIR}{dataset}/study1_sentences.csv"
+        word_file = f"{INPUT_DIR}{dataset}/study1_words.csv"
+        output_file = f"{output_path}/study_1_{model_name}-{special_tokens}.csv"
+        run_extraction(model_name, dataset, sentence_file, word_file, output_file)
+
+        sentence_file = f"{INPUT_DIR}{dataset}/study2_sentences.csv"
+        word_file = f"{INPUT_DIR}{dataset}/study2_words.csv"
+        output_file = f"{output_path}/study_2_{model_name}-{special_tokens}.csv"
+        run_extraction(model_name, dataset, sentence_file, word_file, output_file)
+
+    if dataset == SARCASM_DATASET:
+        output_path = create_output_dir(dataset, OUTPUT_DIR)
+        sentence_file = f"{INPUT_DIR}{dataset}/sentences.csv"
+        word_file = f"{INPUT_DIR}{dataset}/words.csv"
+        output_file = f"{output_path}/{model_name}-{special_tokens}.csv"
+        run_extraction(model_name, dataset, sentence_file, word_file, output_file)
 
 
 def main():
-    pass
+    control_extraction(args.model, args.data)
 
 
 if __name__ == "__main__":
-    "Run from run experiment"
+    main()
