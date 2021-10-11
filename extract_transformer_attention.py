@@ -8,7 +8,7 @@ from utils import word_formatter, create_output_dir
 from collections import OrderedDict
 
 INPUT_DIR = "output/text_data/"
-OUTPUT_DIR = "output/normalized_attention_data/"
+OUTPUT_DIR = "output/attention_data/"
 SOOD_DATASET = "sood_et_al_2020"
 SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
@@ -161,24 +161,10 @@ def create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, toke
     return df
 
 
-def normalize_df(df):
-    normalised_dfs = []
-    for sentence in df["SENTENCE_ID"].unique():
-        print(sentence)
-        mask = df["SENTENCE_ID"] == sentence
-        current_df = df[mask].set_index("WORD_ID", "SENTENCE_ID").select_dtypes(exclude="object")
-        normalised_dfs.append(current_df / current_df.sum())
-
-    normal_df = pd.concat(normalised_dfs)
-    normal_df.columns = [f"norm_{col}" for col in normal_df.columns]
-    df = pd.merge(df, normal_df, left_on="WORD_ID", right_index=True)
-
-    return df
-
-
 def run_extraction(model_name, dataset, sentence_file, word_file, output_file):
     if path.isfile(output_file):
         print(f"{output_file} already exists - skipping creation")
+
     else:
         tokenizer, model = load_models(model_name)
         sentence_df, word_df = load_data(sentence_file, word_file)
@@ -209,9 +195,7 @@ def run_extraction(model_name, dataset, sentence_file, word_file, output_file):
 
         processed_df = pd.concat(dfs)
         processed_df = pd.merge(word_df, processed_df, on="WORD_ID")
-        processed_df.to_csv(f"{output_file[:-4]}-pre_norm.csv")
-        final_df = normalize_df(processed_df)
-        final_df.to_csv(output_file)
+        processed_df.to_csv(output_file)
         print(f"{output_file} Done!")
 
 
