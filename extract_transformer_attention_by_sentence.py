@@ -161,31 +161,42 @@ def create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, toke
     return df
 
 
+def extraction_loop(model_name, sentence_df, word_df):
+    tokenizer, model = load_models(model_name)
+
+    dfs = []
+    errors = []
+
+    for i, sentence_id in sentence_df["SENTENCE_ID"].iteritems():
+        print(f"{i + 1} of {sentence_df.shape[0]}")
+        mask = word_df['SENTENCE_ID'] == sentence_id
+        if mask.sum() == 0:
+            errors.append(f"{sentence_id} - Zero!")
+            continue
+
+        try:
+            df = create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer)
+            dfs.append(df)
+
+        except Exception as e:
+            errors.append(f"{sentence_id} - {e}")
+
+    return dfs, errors
+
+
 def run_extraction(model_name, dataset, sentence_file, word_file, output_file):
     if path.isfile(output_file):
         print(f"{output_file} already exists - skipping creation")
 
     else:
-        with torch.cuda.device(0):
-            tokenizer, model = load_models(model_name)
-            sentence_df, word_df = load_data(sentence_file, word_file)
+        sentence_df, word_df = load_data(sentence_file, word_file)
 
-            dfs = []
-            errors = []
+        if torch.cuda.is_available():
+            with torch.cuda.device(0):
+                dfs, errors = extraction_loop(model_name, sentence_df, word_df)
 
-            for i, sentence_id in sentence_df["SENTENCE_ID"].iteritems():
-                print(f"{i + 1} of {sentence_df.shape[0]}")
-                mask = word_df['SENTENCE_ID'] == sentence_id
-                if mask.sum() == 0:
-                    errors.append(f"{sentence_id} - Zero!")
-                    continue
-
-                try:
-                    df = create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer)
-                    dfs.append(df)
-
-                except Exception as e:
-                    errors.append(f"{sentence_id} - {e}")
+        else:
+            dfs, errors = extraction_loop(model_name, sentence_df, word_df)
 
         if len(errors) > 0:
             output_path = create_output_dir(dataset, f"{OUTPUT_DIR}/errors/")
