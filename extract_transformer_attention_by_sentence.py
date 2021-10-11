@@ -78,9 +78,8 @@ def process_attention_scores(inputs, model, special_tokens=True):
     return processed_df
 
 
-def get_attention_scores(sample, model, tokenizer, device, special_tokens=True):
+def get_attention_scores(sample, model, tokenizer, special_tokens=True):
     inputs, tokens_per_word = process_sample(sample, tokenizer, special_tokens=special_tokens)
-    inputs.to(device)
     attention_scores = process_attention_scores(inputs, model, special_tokens=special_tokens)
 
     index = 0
@@ -121,9 +120,9 @@ def get_final_df(final_df, orignal_df):
     return final_df[mask]
 
 
-def create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer, device, special_tokens=True):
+def create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer, special_tokens=True):
     sentence = sentence_df.loc[sentence_df['SENTENCE_ID'] == sentence_id, 'SENTENCE'].iloc[0]
-    attention_scores = get_attention_scores(sentence, model, tokenizer, device, special_tokens=special_tokens)
+    attention_scores = get_attention_scores(sentence, model, tokenizer, special_tokens=special_tokens)
 
     original_df = word_df[mask]
 
@@ -163,35 +162,30 @@ def create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, toke
 
 
 def run_extraction(model_name, dataset, sentence_file, word_file, output_file):
-    if torch.cuda.is_available():
-        device = torch.device('cuda')
-    else:
-        device = torch.device('cpu')
-
     if path.isfile(output_file):
         print(f"{output_file} already exists - skipping creation")
 
     else:
-        tokenizer, model = load_models(model_name)
-        model.to(device)
-        sentence_df, word_df = load_data(sentence_file, word_file)
+        with torch.cuda.device(0):
+            tokenizer, model = load_models(model_name)
+            sentence_df, word_df = load_data(sentence_file, word_file)
 
-        dfs = []
-        errors = []
+            dfs = []
+            errors = []
 
-        for i, sentence_id in sentence_df["SENTENCE_ID"].iteritems():
-            print(f"{i + 1} of {sentence_df.shape[0]}")
-            mask = word_df['SENTENCE_ID'] == sentence_id
-            if mask.sum() == 0:
-                errors.append(f"{sentence_id} - Zero!")
-                continue
+            for i, sentence_id in sentence_df["SENTENCE_ID"].iteritems():
+                print(f"{i + 1} of {sentence_df.shape[0]}")
+                mask = word_df['SENTENCE_ID'] == sentence_id
+                if mask.sum() == 0:
+                    errors.append(f"{sentence_id} - Zero!")
+                    continue
 
-            try:
-                df = create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer, device)
-                dfs.append(df)
+                try:
+                    df = create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer)
+                    dfs.append(df)
 
-            except Exception as e:
-                errors.append(f"{sentence_id} - {e}")
+                except Exception as e:
+                    errors.append(f"{sentence_id} - {e}")
 
         if len(errors) > 0:
             output_path = create_output_dir(dataset, f"{OUTPUT_DIR}/errors/")
