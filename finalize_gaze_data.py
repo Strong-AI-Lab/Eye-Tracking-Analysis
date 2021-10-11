@@ -69,7 +69,7 @@ def combine_dfs(gaze_df, words_df, dataset):
         words_mask = words_df["PARAGRAPH_ID"] == paragraph_id
         current_words = words_df[words_mask]
 
-        if dataset == SARCASM_DATASET:
+        if dataset in [SOOD_DATASET, SARCASM_DATASET]:
             paragraph_id = int(paragraph_id)
 
         for name in gaze_df[participant_col].unique():
