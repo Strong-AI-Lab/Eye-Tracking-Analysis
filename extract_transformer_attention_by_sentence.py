@@ -55,7 +55,11 @@ def process_sample(sentence, tokenizer, special_tokens=True):
 
 def process_attention_scores(inputs, model, special_tokens=True):
     processed_scores = {}
-    attentions = model(inputs)['attentions']
+    model_output = model(inputs)
+    if "attentions" in model_output.keys():
+        attentions = model(inputs)['attentions']
+    elif "encoder_attentions" in model_output.keys():
+        attentions = model(inputs)['encoder_attentions']
 
     for i in range(len(attentions)):
         processed_scores[f"L{i + 1}_attention-mean"] = attentions[i][0].mean(0).mean(0).detach().numpy()
