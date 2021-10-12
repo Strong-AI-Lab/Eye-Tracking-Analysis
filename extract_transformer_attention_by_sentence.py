@@ -200,7 +200,7 @@ def run_extraction(model_name, dataset, sentence_file, word_file, output_file):
 
         if len(errors) > 0:
             output_path = create_output_dir(dataset, f"{OUTPUT_DIR}/errors/")
-            error_file = open(f"{output_path}/{model_name}.txt", "w")
+            error_file = open(f"{output_path}/{model_name.replace('/','-')}.txt", "w")
             for error in errors:
                 error_file.write(error + "\n")
             error_file.close()
@@ -218,26 +218,26 @@ def control_extraction(model_name, dataset, special_tokens=True):
         output_path = create_output_dir(dataset, OUTPUT_DIR)
         sentence_file = f"{INPUT_DIR}{dataset}/EnglishMaterialSENTENCE.csv"
         word_file = f"{INPUT_DIR}{dataset}/EnglishMaterialALL.csv"
-        output_file = f"{output_path}/{model_name}-{special_tokens}.csv"
+        output_file = f"{output_path}/{model_name.replace('/','-')}-{special_tokens}.csv"
         run_extraction(model_name, dataset, sentence_file, word_file, output_file)
 
     if dataset == SOOD_DATASET:
         output_path = create_output_dir(dataset, OUTPUT_DIR)
         sentence_file = f"{INPUT_DIR}{dataset}/study1_sentences.csv"
         word_file = f"{INPUT_DIR}{dataset}/study1_words.csv"
-        output_file = f"{output_path}/study_1_{model_name}-{special_tokens}.csv"
+        output_file = f"{output_path}/study_1_{model_name.replace('/','-')}-{special_tokens}.csv"
         run_extraction(model_name, dataset, sentence_file, word_file, output_file)
 
         sentence_file = f"{INPUT_DIR}{dataset}/study2_sentences.csv"
         word_file = f"{INPUT_DIR}{dataset}/study2_words.csv"
-        output_file = f"{output_path}/study_2_{model_name}-{special_tokens}.csv"
+        output_file = f"{output_path}/study_2_{model_name.replace('/','-')}-{special_tokens}.csv"
         run_extraction(model_name, dataset, sentence_file, word_file, output_file)
 
     if dataset == SARCASM_DATASET:
         output_path = create_output_dir(dataset, OUTPUT_DIR)
         sentence_file = f"{INPUT_DIR}{dataset}/sentences.csv"
         word_file = f"{INPUT_DIR}{dataset}/words.csv"
-        output_file = f"{output_path}/{model_name}-{special_tokens}.csv"
+        output_file = f"{output_path}/{model_name.replace('/','-')}-{special_tokens}.csv"
         run_extraction(model_name, dataset, sentence_file, word_file, output_file)
 
 

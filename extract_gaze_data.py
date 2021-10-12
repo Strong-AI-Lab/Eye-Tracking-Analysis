@@ -14,9 +14,11 @@ def process_participant_gaze(file, dataset=None):
     df = pd.read_csv(file,
                      sep="\t",
                      usecols=["Recording name", "Presented Stimulus name", "word_index", "word", "Gaze event duration"],
+                     engine="c",
+                     quoting=3,
                      low_memory=False)
 
-    df["Participant name"] = file.split("/")[-1][:-4]
+    df["Participant name"] = file.split("\\")[-1].split("/")[-1][:-4]
 
     df = df[(df["word_index"] > -1)].groupby(
         ["Participant name", "Recording name", "Presented Stimulus name", "word_index", "word"]).sum()[
