@@ -1,9 +1,9 @@
 bert-base-uncased
 bert-base-cased
-bert-large-uncased
-bert-large-cased
 bert-base-multilingual-cased
 xlnet-base-cased
-xlnet-large-cased
 facebook/bart-base
-facebook/bart-large
+allenai/longformer-base-4096
+roberta-base
+google/bigbird-roberta-base
+t5-base
