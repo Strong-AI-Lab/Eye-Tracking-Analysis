@@ -9,7 +9,7 @@ google/bigbird-roberta-base
 bert-large-uncased
 bert-large-cased
 facebook/bart-large
-reberta-large
+roberta-large
 google/bigbird-roberta-large
 t5-base
 t5-small
