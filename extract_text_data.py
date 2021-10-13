@@ -35,7 +35,7 @@ def process_text(text_id, text):
 
 def create_text_dfs(data, text=None):
     if text is None:
-        text_id = data.split("/")[-1].split("\\")[-1][:-4]
+        text_id = data.split("/")[-1][:-4]
         text = get_text(data)
     else:
         text_id = data
@@ -79,7 +79,7 @@ def create_sood_et_al_text_data(dataset):
     if path.isfile(words_output_file) and path.isfile(sentences_output_file):
         print(f"{output_path} study 1 files already exist - skipping creation")
     else:
-        texts = [text for text in glob.glob(f'{INPUT_DIR}/{dataset}/release24_2/stimuli/study1/exp3/**/*.txt',
+        texts = [text.replace("\\", "/") for text in glob.glob(f'{INPUT_DIR}/{dataset}/release24_2/stimuli/study1/exp3/**/*.txt',
                                             recursive=True) if "QA" not in text]
         words_df, sentences_df = extract_format_text(dataset=dataset, texts=texts)
         words_df.to_csv(words_output_file, index=False)

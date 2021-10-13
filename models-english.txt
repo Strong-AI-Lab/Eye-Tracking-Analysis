@@ -11,3 +11,4 @@ bert-large-cased
 facebook/bart-large
 roberta-large
 google/bigbird-roberta-large
+google/reformer-crime-and-punishment

@@ -18,7 +18,7 @@ def process_participant_gaze(file, dataset=None):
                      quoting=3,
                      low_memory=False)
 
-    df["Participant name"] = file.split("\\")[-1].split("/")[-1][:-4]
+    df["Participant name"] = file.split("/")[-1][:-4]
 
     df = df[(df["word_index"] > -1)].groupby(
         ["Participant name", "Recording name", "Presented Stimulus name", "word_index", "word"]).sum()[
@@ -70,7 +70,7 @@ def create_sood_et_al_gaze_data(dataset):
         print(f"{output_file} already exists - skipping creation")
     else:
         data = "data/sood_et_al_2020/release24_2/study2_data/"
-        files = [f"{data}{file.name}" for file in scandir(data) if ".tsv" in file.name]
+        files = [f"{data}{file.name}".replace("\\", "/") for file in scandir(data) if ".tsv" in file.name]
         df = create_gaze_dataset(dataset=dataset, files=files)
         df.to_csv(output_file, index=False)
         print(f"{output_file} done")
