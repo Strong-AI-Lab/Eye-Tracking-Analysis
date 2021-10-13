@@ -180,12 +180,12 @@ def extraction_loop(model_name, sentence_df, word_df, device):
             errors.append(f"{sentence_id} - Zero!")
             continue
 
-        try:
-            df = create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer, device)
-            dfs.append(df)
+        #try:
+        df = create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer, device)
+        dfs.append(df)
 
-        except Exception as e:
-            errors.append(f"{sentence_id} - {e}")
+        #except Exception as e:
+        #    errors.append(f"{sentence_id} - {e}")
 
     return dfs, errors
 
