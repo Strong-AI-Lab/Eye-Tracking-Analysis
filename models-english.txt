@@ -11,6 +11,3 @@ bert-large-cased
 facebook/bart-large
 roberta-large
 google/bigbird-roberta-large
-t5-base
-t5-small
-t5-large
