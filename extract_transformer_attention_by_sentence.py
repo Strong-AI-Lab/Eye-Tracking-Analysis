@@ -55,7 +55,7 @@ def process_sample(sentence, tokenizer, special_tokens=True):
 
 def process_attention_scores(inputs, model, special_tokens=True):
     processed_scores = {}
-    model_output = model(inputs)
+    model_output = model(inputs).cpu()
     if "attentions" in model_output.keys():
         attentions = model(inputs)['attentions']
     elif "encoder_attentions" in model_output.keys():

@@ -7,3 +7,10 @@ allenai/longformer-base-4096
 roberta-base
 google/bigbird-roberta-base
 t5-base
+bert-large-uncased
+bert-large-cased
+facebook/bart-large
+t5-small
+t5-large
+reberta-large
+google/bigbird-roberta-large
