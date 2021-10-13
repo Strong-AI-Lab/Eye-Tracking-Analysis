@@ -59,21 +59,21 @@ def process_attention_scores(inputs, model, special_tokens=True):
     if "attentions" in model_output.keys():
         attentions = model(inputs)['attentions'].cpu()
     elif "encoder_attentions" in model_output.keys():
-        attentions = model(inputs)['encoder_attentions'].cpu()
+        attentions = model(inputs)['encoder_attentions']
 
     for i in range(len(attentions)):
-        processed_scores[f"L{i + 1}_attention-mean"] = attentions[i][0].mean(0).mean(0).detach().numpy()
+        processed_scores[f"L{i + 1}_attention-mean"] = attentions[i][0].mean(0).mean(0).detach().cpu().numpy()
         processed_scores[f"L{i + 1}_attention-max"] = torch.max(torch.max(attentions[i][0], 0).values,
-                                                                0).values.detach().numpy()
+                                                                0).values.detach().cpu().numpy()
         processed_scores[f"L{i + 1}_attention-min"] = torch.min(torch.min(attentions[i][0], 0).values,
-                                                                0).values.detach().numpy()
+                                                                0).values.detach().cpu().numpy()
 
         if special_tokens:
-            processed_scores[f"L{i + 1}_cls-attention-mean"] = attentions[i][0, :, 0].mean(0).detach().numpy()
+            processed_scores[f"L{i + 1}_cls-attention-mean"] = attentions[i][0, :, 0].mean(0).detach().cpu().numpy()
             processed_scores[f"L{i + 1}_cls-attention-max"] = torch.max(attentions[i][0, :, 0],
-                                                                        0).values.detach().numpy()
+                                                                        0).values.detach().cpu().numpy()
             processed_scores[f"L{i + 1}_cls-attention-min"] = torch.min(attentions[i][0, :, 0],
-                                                                        0).values.detach().numpy()
+                                                                        0).values.detach().cpu().numpy()
 
     processed_df = pd.DataFrame.from_dict(processed_scores)
     if special_tokens:
