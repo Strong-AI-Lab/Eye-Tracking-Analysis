@@ -55,11 +55,11 @@ def process_sample(sentence, tokenizer, special_tokens=True):
 
 def process_attention_scores(inputs, model, special_tokens=True):
     processed_scores = {}
-    model_output = model(inputs).cpu()
+    model_output = model(inputs)
     if "attentions" in model_output.keys():
-        attentions = model(inputs)['attentions']
+        attentions = model(inputs)['attentions'].cpu()
     elif "encoder_attentions" in model_output.keys():
-        attentions = model(inputs)['encoder_attentions']
+        attentions = model(inputs)['encoder_attentions'].cpu()
 
     for i in range(len(attentions)):
         processed_scores[f"L{i + 1}_attention-mean"] = attentions[i][0].mean(0).mean(0).detach().numpy()
