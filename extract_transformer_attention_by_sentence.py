@@ -85,6 +85,7 @@ def process_attention_scores(inputs, model, special_tokens=True):
 def get_attention_scores(sample, model, tokenizer, device, special_tokens=True):
     inputs, tokens_per_word = process_sample(sample, tokenizer, special_tokens=special_tokens)
     inputs.to(torch.device(device))
+    print(inputs.device)
     attention_scores = process_attention_scores(inputs, model, special_tokens=special_tokens)
 
     index = 0
