@@ -57,7 +57,7 @@ def process_attention_scores(inputs, model, special_tokens=True):
     processed_scores = {}
     model_output = model(inputs)
     if "attentions" in model_output.keys():
-        attentions = model(inputs)['attentions'].cpu()
+        attentions = model(inputs)['attentions']
     elif "encoder_attentions" in model_output.keys():
         attentions = model(inputs)['encoder_attentions']
 
