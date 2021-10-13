@@ -82,8 +82,9 @@ def process_attention_scores(inputs, model, special_tokens=True):
     return processed_df
 
 
-def get_attention_scores(sample, model, tokenizer, special_tokens=True):
+def get_attention_scores(sample, model, tokenizer, device, special_tokens=True):
     inputs, tokens_per_word = process_sample(sample, tokenizer, special_tokens=special_tokens)
+    inputs.to(torch.device(device))
     attention_scores = process_attention_scores(inputs, model, special_tokens=special_tokens)
 
     index = 0
@@ -124,9 +125,9 @@ def get_final_df(final_df, orignal_df):
     return final_df[mask]
 
 
-def create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer, special_tokens=True):
+def create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer, device, special_tokens=True):
     sentence = sentence_df.loc[sentence_df['SENTENCE_ID'] == sentence_id, 'SENTENCE'].iloc[0]
-    attention_scores = get_attention_scores(sentence, model, tokenizer, special_tokens=special_tokens)
+    attention_scores = get_attention_scores(sentence, model, tokenizer, device, special_tokens=special_tokens)
 
     original_df = word_df[mask]
 
@@ -165,8 +166,9 @@ def create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, toke
     return df
 
 
-def extraction_loop(model_name, sentence_df, word_df):
+def extraction_loop(model_name, sentence_df, word_df, device):
     tokenizer, model = load_models(model_name)
+    model.to(torch.device(device))
 
     dfs = []
     errors = []
@@ -179,7 +181,7 @@ def extraction_loop(model_name, sentence_df, word_df):
             continue
 
         try:
-            df = create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer)
+            df = create_df_from_sentence(sentence_id, sentence_df, word_df, model, mask, tokenizer, device)
             dfs.append(df)
 
         except Exception as e:
@@ -194,13 +196,12 @@ def run_extraction(model_name, dataset, sentence_file, word_file, output_file):
 
     else:
         sentence_df, word_df = load_data(sentence_file, word_file)
+        device = "cpu"
 
         if torch.cuda.is_available():
-            with torch.cuda.device(0):
-                dfs, errors = extraction_loop(model_name, sentence_df, word_df)
+            device = "cuda"
 
-        else:
-            dfs, errors = extraction_loop(model_name, sentence_df, word_df)
+        dfs, errors = extraction_loop(model_name, sentence_df, word_df, device)
 
         if len(errors) > 0:
             output_path = create_output_dir(dataset, f"{OUTPUT_DIR}/errors/")
