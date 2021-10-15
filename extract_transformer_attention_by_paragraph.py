@@ -12,6 +12,7 @@ OUTPUT_DIR = "output/attention_data/paragraphs/"
 SOOD_DATASET = "sood_et_al_2020"
 SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
+ZUCO_DATSET = "ZuCo"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--data", default="GECO")
@@ -233,7 +234,13 @@ def run_extraction(model_name, dataset, sentence_file, word_file, output_file):
                 error_file.write(error + "\n")
             error_file.close()
 
-        processed_df = pd.concat(dfs)
+        if len(dfs) > 1:
+            processed_df = pd.concat(dfs)
+        elif len(dfs) == 1:
+            processed_df = dfs[0]
+        else:
+            return
+
         processed_df = pd.merge(word_df, processed_df, on="WORD_ID")
         processed_df.to_csv(output_file)
         print(f"{output_file} Done!")
@@ -266,6 +273,25 @@ def control_extraction(model_name, dataset, special_tokens=True):
         sentence_file = f"{INPUT_DIR}{dataset}/sentences.csv"
         word_file = f"{INPUT_DIR}{dataset}/words.csv"
         output_file = f"{output_path}/{model_name.replace('/','-')}-{special_tokens}.csv"
+        run_extraction(model_name, dataset, sentence_file, word_file, output_file)
+
+    if dataset == ZUCO_DATSET:
+        output_path = create_output_dir(dataset, OUTPUT_DIR)
+        sentence_file = f"{INPUT_DIR}{dataset}/t1_sentences.csv"
+        word_file = f"{INPUT_DIR}{dataset}/t1_words.csv"
+        output_file = f"{output_path}/task_1_{model_name.replace('/','-')}-{special_tokens}.csv"
+        run_extraction(model_name, dataset, sentence_file, word_file, output_file)
+
+        output_path = create_output_dir(dataset, OUTPUT_DIR)
+        sentence_file = f"{INPUT_DIR}{dataset}/t2_sentences.csv"
+        word_file = f"{INPUT_DIR}{dataset}/t2_words.csv"
+        output_file = f"{output_path}/task_2_{model_name.replace('/','-')}-{special_tokens}.csv"
+        run_extraction(model_name, dataset, sentence_file, word_file, output_file)
+
+        output_path = create_output_dir(dataset, OUTPUT_DIR)
+        sentence_file = f"{INPUT_DIR}{dataset}/t3_sentences.csv"
+        word_file = f"{INPUT_DIR}{dataset}/t3_words.csv"
+        output_file = f"{output_path}/task_3_{model_name.replace('/','-')}-{special_tokens}.csv"
         run_extraction(model_name, dataset, sentence_file, word_file, output_file)
 
 

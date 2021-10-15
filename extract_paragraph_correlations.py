@@ -10,6 +10,7 @@ OUTPUT_DIR = "output/correlation_data/paragraphs/"
 SOOD_DATASET = "sood_et_al_2020"
 SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
+ZUCO_DATSET = "ZuCo"
 
 
 def get_gaze_data(filepath):
@@ -129,6 +130,30 @@ def create_geco_corr_table(dataset):
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
 
 
+def create_zuco_corr_table(dataset):
+    print(dataset)
+    eye_col = "Fixation_Duration"
+    transformer_datapath = f"{INPUT_DIR}{dataset}/"
+
+    output_path = create_output_dir(f"{dataset}/Study_1/", OUTPUT_DIR)
+    gaze_data = "output/normalized_gaze_data/ZuCo/normed_task1_sentences.csv"
+    transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)
+                         if "task_1" in file.name]
+    create_datasets(gaze_data, transformer_files, eye_col, output_path)
+
+    output_path = create_output_dir(f"{dataset}/Study_2/", OUTPUT_DIR)
+    gaze_data = "output/normalized_gaze_data/ZuCo/normed_task2_sentences.csv"
+    transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)
+                         if "task_2" in file.name]
+    create_datasets(gaze_data, transformer_files, eye_col, output_path)
+
+    output_path = create_output_dir(f"{dataset}/Study_3/", OUTPUT_DIR)
+    gaze_data = "output/normalized_gaze_data/ZuCo/normed_task3_sentences.csv"
+    transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)
+                         if "task_3" in file.name]
+    create_datasets(gaze_data, transformer_files, eye_col, output_path)
+
+
 def main():
     if not path.isdir(path.join(INPUT_DIR, SOOD_DATASET)):
         print(f"Cannot find {SOOD_DATASET} - skipping creation")
@@ -144,6 +169,11 @@ def main():
         print(f"Cannot find {GECO_DATASET} - skipping creation")
     else:
         create_geco_corr_table(GECO_DATASET)
+
+    if not path.isdir(path.join(INPUT_DIR, ZUCO_DATSET)):
+        print(f"Cannot find {ZUCO_DATSET} - skipping creation")
+    else:
+        create_zuco_corr_table(ZUCO_DATSET)
 
 
 if __name__ == "__main__":

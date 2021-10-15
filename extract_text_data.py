@@ -1,3 +1,5 @@
+import shutil
+
 import pandas as pd
 import glob
 from collections import OrderedDict
@@ -10,6 +12,7 @@ OUTPUT_DIR = "output/text_data/"
 SOOD_DATASET = "sood_et_al_2020"
 SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
+ZUCO_DATSET = "ZuCo"
 
 
 def process_text(text_id, text):
@@ -79,8 +82,9 @@ def create_sood_et_al_text_data(dataset):
     if path.isfile(words_output_file) and path.isfile(sentences_output_file):
         print(f"{output_path} study 1 files already exist - skipping creation")
     else:
-        texts = [text.replace("\\", "/") for text in glob.glob(f'{INPUT_DIR}/{dataset}/release24_2/stimuli/study1/exp3/**/*.txt',
-                                            recursive=True) if "QA" not in text]
+        texts = [text.replace("\\", "/") for text in
+                 glob.glob(f'{INPUT_DIR}/{dataset}/release24_2/stimuli/study1/exp3/**/*.txt',
+                           recursive=True) if "QA" not in text]
         words_df, sentences_df = extract_format_text(dataset=dataset, texts=texts)
         words_df.to_csv(words_output_file, index=False)
         sentences_df.to_csv(sentences_output_file, index=False)
@@ -239,6 +243,46 @@ def create_geco_text_data(dataset):
         print(f"{output_file} done")
 
 
+def create_zuco_text_data(dataset):
+    output_path = create_output_dir(dataset, OUTPUT_DIR)
+    words_output_file = f"{output_path}/t1_words.csv"
+    sentences_output_file = f"{output_path}/t1_sentences.csv"
+
+    if path.isfile(words_output_file) and path.isfile(sentences_output_file):
+        print(f"{output_path} task 1 files already exist - skipping creation")
+    else:
+        words_df = pd.read_csv(f"{INPUT_DIR}{dataset}/Task_1/words.csv")
+        words_df["WORD_ID"] = words_df["SENTENCE_ID"].astype(str) + "-" + words_df["WORD_ID"].astype(str)
+        words_df.to_csv(words_output_file, index=False)
+        shutil.copyfile(f"{INPUT_DIR}{dataset}/Task_1/sentences.csv", sentences_output_file)
+        print(f"{output_path} task 1 files done")
+
+    words_output_file = f"{output_path}/t2_words.csv"
+    sentences_output_file = f"{output_path}/t2_sentences.csv"
+
+
+    if path.isfile(words_output_file) and path.isfile(sentences_output_file):
+        print(f"{output_path} task 2 files already exist - skipping creation")
+    else:
+        words_df = pd.read_csv(f"{INPUT_DIR}{dataset}/Task_2/words.csv")
+        words_df["WORD_ID"] = words_df["SENTENCE_ID"].astype(str) + "-" + words_df["WORD_ID"].astype(str)
+        words_df.to_csv(words_output_file, index=False)
+        shutil.copyfile(f"{INPUT_DIR}{dataset}/Task_2/sentences.csv", sentences_output_file)
+        print(f"{output_path} task 2 files done")
+
+    words_output_file = f"{output_path}/t3_words.csv"
+    sentences_output_file = f"{output_path}/t3_sentences.csv"
+
+    if path.isfile(words_output_file) and path.isfile(sentences_output_file):
+        print(f"{output_path} task 3 files already exist - skipping creation")
+    else:
+        words_df = pd.read_csv(f"{INPUT_DIR}{dataset}/Task_3/words.csv")
+        words_df["WORD_ID"] = words_df["SENTENCE_ID"].astype(str) + "-" + words_df["WORD_ID"].astype(str)
+        words_df.to_csv(words_output_file, index=False)
+        shutil.copyfile(f"{INPUT_DIR}{dataset}/Task_3/sentences.csv", sentences_output_file)
+        print(f"{output_path} task 3 files done")
+
+
 def main():
     if not path.isdir(path.join(INPUT_DIR, SOOD_DATASET)):
         print(f"Cannot find {SOOD_DATASET} - skipping creation")
@@ -254,6 +298,11 @@ def main():
         print(f"Cannot find {GECO_DATASET} - skipping creation")
     else:
         create_geco_text_data(GECO_DATASET)
+
+    if not path.isdir(path.join(INPUT_DIR, ZUCO_DATSET)):
+        print(f"Cannot find {ZUCO_DATSET} - skipping creation")
+    else:
+        create_zuco_text_data(ZUCO_DATSET)
 
 
 if __name__ == "__main__":

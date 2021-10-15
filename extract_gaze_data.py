@@ -8,9 +8,10 @@ OUTPUT_DIR = "output/gaze_data/"
 SOOD_DATASET = "sood_et_al_2020"
 SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
+ZUCO_DATSET = "ZuCo"
 
 
-def process_participant_gaze(file, dataset=None):
+def process_participant_gaze(file):
     df = pd.read_csv(file,
                      sep="\t",
                      usecols=["Recording name", "Presented Stimulus name", "word_index", "word", "Gaze event duration"],
@@ -47,6 +48,10 @@ def create_gaze_dataset(dataset=None, files=None):
                 print(f"{file}: {e}")
 
         df = pd.concat(dfs).reset_index()
+
+    if dataset == ZUCO_DATSET:
+        df = pd.read_csv(files)
+        df.loc[df["Fixation_Duration"] < 0, "Fixation_Duration"] = 0
 
     return df
 
@@ -107,6 +112,36 @@ def create_geco_gaze_data(dataset):
         print(f"{output_file} done")
 
 
+def create_zuco_gaze_data(dataset):
+    output_path = create_output_dir(dataset, OUTPUT_DIR)
+    output_file = f"{output_path}/t1_gaze_duration.csv"
+
+    if path.isfile(output_file):
+        print(f"{output_file} already exists - skipping creation")
+    else:
+        df = create_gaze_dataset(dataset=dataset, files=f"{INPUT_DIR}{dataset}/Task_1/gaze_duration.csv")
+        df.to_csv(output_file, index=False)
+        print(f"{output_file} done")
+
+    output_file = f"{output_path}/t2_gaze_duration.csv"
+
+    if path.isfile(output_file):
+        print(f"{output_file} already exists - skipping creation")
+    else:
+        df = create_gaze_dataset(dataset=dataset, files=f"{INPUT_DIR}{dataset}/Task_2/gaze_duration.csv")
+        df.to_csv(output_file, index=False)
+        print(f"{output_file} done")
+
+    output_file = f"{output_path}/t3_gaze_duration.csv"
+
+    if path.isfile(output_file):
+        print(f"{output_file} already exists - skipping creation")
+    else:
+        df = create_gaze_dataset(dataset=dataset, files=f"{INPUT_DIR}{dataset}/Task_2/gaze_duration.csv")
+        df.to_csv(output_file, index=False)
+        print(f"{output_file} done")
+
+
 def main():
     if not path.isdir(path.join(INPUT_DIR, SOOD_DATASET)):
         print(f"Cannot find {SOOD_DATASET} - skipping creation")
@@ -122,6 +157,11 @@ def main():
         print(f"Cannot find {GECO_DATASET} - skipping creation")
     else:
         create_geco_gaze_data(GECO_DATASET)
+        
+    if not path.isdir(path.join(INPUT_DIR, ZUCO_DATSET)):
+        print(f"Cannot find {ZUCO_DATSET} - skipping creation")
+    else:
+        create_zuco_gaze_data(ZUCO_DATSET)
 
 
 if __name__ == "__main__":
