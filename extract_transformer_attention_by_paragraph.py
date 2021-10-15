@@ -43,10 +43,13 @@ def load_data(sentence_file, word_file):
         sentences = []
 
         for sentence_id in sentence_paragraph_df[mask]["SENTENCE_ID"].unique():
-            sentence = sentence_df.loc[sentence_df["SENTENCE_ID"] == sentence_id]["SENTENCE"].iloc[0]
-            sentences.append(sentence)
+            current_sentence = sentence_df.loc[sentence_df["SENTENCE_ID"] == sentence_id]
+            if current_sentence.shape[0] > 0:
+                sentence = current_sentence.iloc[0]["SENTENCE"]
+                sentences.append(sentence)
 
-        paragraphs[paragraph_id] = " ".join(sentences)
+        if len(sentences) > 0:
+            paragraphs[paragraph_id] = " ".join(sentences)
 
     paragraph_df = pd.DataFrame.from_dict(paragraphs, orient="index").reset_index()
     paragraph_df.columns = ["PARAGRAPH_ID", "PARAGRAPH"]
