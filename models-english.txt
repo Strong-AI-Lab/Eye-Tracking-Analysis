@@ -11,14 +11,17 @@ facebook/bart-base
 facebook/bart-large
 google/bigbird-roberta-base
 google/bigbird-roberta-large
+google/fnet-base
 google/pegasus-large
 google/reformer-crime-and-punishment
 microsoft/deberta-base
 microsoft/deberta-large
+microsoft/prophetnet-large-uncased
 mwesner/reformer-clm
 nvidia/megatron-bert-cased-345m
 nvidia/megatron-bert-uncased-345m
 roberta-base
 roberta-large
+squeezebert/squeezebert-uncased
 xlnet-base-cased
 xlnet-large-cased
