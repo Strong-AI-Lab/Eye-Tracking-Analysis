@@ -18,8 +18,6 @@ microsoft/deberta-base
 microsoft/deberta-large
 microsoft/prophetnet-large-uncased
 mwesner/reformer-clm
-nvidia/megatron-bert-cased-345m
-nvidia/megatron-bert-uncased-345m
 roberta-base
 roberta-large
 squeezebert/squeezebert-uncased
