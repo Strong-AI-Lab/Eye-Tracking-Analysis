@@ -11,6 +11,7 @@ SOOD_DATASET = "sood_et_al_2020"
 SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
 ZUCO_DATSET = "ZuCo"
+PROVO_DATASET = "Provo"
 
 
 def get_gaze_data(filepath):
@@ -154,6 +155,17 @@ def create_zuco_corr_table(dataset):
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
 
 
+def create_provo_corr_table(dataset):
+    print(dataset)
+    eye_col = "Fixation_Duration"
+    transformer_datapath = f"{INPUT_DIR}{dataset}/"
+
+    output_path = create_output_dir(f"{dataset}", OUTPUT_DIR)
+    gaze_data = "output/normalized_gaze_data/Provo/normed_sentences.csv"
+    transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)]
+    create_datasets(gaze_data, transformer_files, eye_col, output_path)
+
+
 def main():
     if not path.isdir(path.join(INPUT_DIR, SOOD_DATASET)):
         print(f"Cannot find {SOOD_DATASET} - skipping creation")
@@ -174,6 +186,11 @@ def main():
         print(f"Cannot find {ZUCO_DATSET} - skipping creation")
     else:
         create_zuco_corr_table(ZUCO_DATSET)
+
+    if not path.isdir(path.join(INPUT_DIR, PROVO_DATASET)):
+        print(f"Cannot find {PROVO_DATASET} - skipping creation")
+    else:
+        create_provo_corr_table(PROVO_DATASET)
 
 
 if __name__ == "__main__":

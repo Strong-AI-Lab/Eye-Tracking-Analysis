@@ -6,7 +6,7 @@ from os import path, scandir
 from utils import create_output_dir
 
 INPUT_DIR = "output/normalized_attention_data/paragraphs/"
-OUTPUT_DIR = "output/correlation_data/paragraphs/"
+OUTPUT_DIR = "output/correlation_data/sentence-paragraphs/"
 SOOD_DATASET = "sood_et_al_2020"
 SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
@@ -96,14 +96,14 @@ def create_sood_et_al_corr_table(dataset):
     transformer_datapath = f"{INPUT_DIR}{dataset}/"
 
     output_path = create_output_dir(f"{dataset}/Study_1/", OUTPUT_DIR)
-    gaze_data = "output/normalized_gaze_data/sood_et_al_2020/normed_study1_paragraphs.csv"
+    gaze_data = "output/normalized_gaze_data/sood_et_al_2020/normed_study1_sentences.csv"
     transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)
                          if "study_1" in file.name]
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
 
 
     output_path = create_output_dir(f"{dataset}/Study_2/", OUTPUT_DIR)
-    gaze_data = "output/normalized_gaze_data/sood_et_al_2020/normed_study2_paragraphs.csv"
+    gaze_data = "output/normalized_gaze_data/sood_et_al_2020/normed_study2_sentences.csv"
     transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)
                          if "study_2" in file.name]
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
@@ -115,7 +115,7 @@ def create_mishra_sarcasm_corr_table(dataset):
     transformer_datapath = f"{INPUT_DIR}{dataset}/"
 
     output_path = create_output_dir(f"{dataset}", OUTPUT_DIR)
-    gaze_data = "output/normalized_gaze_data/Mishra/Eye-tracking_and_SA-II_released_dataset/normed_paragraphs.csv"
+    gaze_data = "output/normalized_gaze_data/Mishra/Eye-tracking_and_SA-II_released_dataset/normed_sentences.csv"
     transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)]
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
 
@@ -126,7 +126,7 @@ def create_geco_corr_table(dataset):
     transformer_datapath = f"{INPUT_DIR}{dataset}/"
 
     output_path = create_output_dir(f"{dataset}", OUTPUT_DIR)
-    gaze_data = "output/normalized_gaze_data/GECO/normed_paragraphs.csv"
+    gaze_data = "output/normalized_gaze_data/GECO/normed_sentences.csv"
     transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)]
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
 
@@ -137,19 +137,19 @@ def create_zuco_corr_table(dataset):
     transformer_datapath = f"{INPUT_DIR}{dataset}/"
 
     output_path = create_output_dir(f"{dataset}/Study_1/", OUTPUT_DIR)
-    gaze_data = "output/normalized_gaze_data/ZuCo/normed_task1_paragraphs.csv"
+    gaze_data = "output/normalized_gaze_data/ZuCo/normed_task1_sentences.csv"
     transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)
                          if "task_1" in file.name]
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
 
     output_path = create_output_dir(f"{dataset}/Study_2/", OUTPUT_DIR)
-    gaze_data = "output/normalized_gaze_data/ZuCo/normed_task2_paragraphs.csv"
+    gaze_data = "output/normalized_gaze_data/ZuCo/normed_task2_sentences.csv"
     transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)
                          if "task_2" in file.name]
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
 
     output_path = create_output_dir(f"{dataset}/Study_3/", OUTPUT_DIR)
-    gaze_data = "output/normalized_gaze_data/ZuCo/normed_task3_paragraphs.csv"
+    gaze_data = "output/normalized_gaze_data/ZuCo/normed_task3_sentences.csv"
     transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)
                          if "task_3" in file.name]
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
@@ -160,7 +160,7 @@ def create_provo_corr_table(dataset):
     transformer_datapath = f"{INPUT_DIR}{dataset}/"
 
     output_path = create_output_dir(f"{dataset}", OUTPUT_DIR)
-    gaze_data = "output/normalized_gaze_data/Provo/normed_paragraphs.csv"
+    gaze_data = "output/normalized_gaze_data/Provo/normed_sentences.csv"
     transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)]
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
 

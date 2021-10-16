@@ -13,6 +13,7 @@ SOOD_DATASET = "sood_et_al_2020"
 SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
 ZUCO_DATSET = "ZuCo"
+PROVO_DATASET = "Provo"
 
 
 def process_text(text_id, text):
@@ -72,6 +73,25 @@ def extract_format_text(dataset=None, texts=None):
     sentences_df = pd.concat(sentence_dfs)
 
     return words_df, sentences_df
+
+
+def get_sentence(row):
+    split_text = row["SENTENCE"].split(".")
+
+    return split_text[row["SENTENCE_ID"] - 1].strip()
+
+
+def add_word_one(words_df, sentences_df):
+    id_data = words_df["WORD_ID"].apply(lambda s: s.replace("QID", ""))
+
+    new_rows = {}
+    for i, row in words_df[words_df["Word_Number"] == 2].iterrows():
+        sentence = sentences_df[sentences_df["SENTENCE_ID"] == row["SENTENCE_ID"]].iloc[0]["SENTENCE"]
+        word = sentence.split()[0].lower()
+        new_rows[i] = {"PARAGRAPH_ID": row["PARAGRAPH_ID"], "SENTENCE_ID": row["SENTENCE_ID"],
+                       "WORD_ID": f"QID{int(id_data.loc[i]) - 1}", "WORD": word, "Word_Number": row["Word_Number"] - 1}
+
+    return pd.DataFrame.from_dict(new_rows, orient="index")
 
 
 def create_sood_et_al_text_data(dataset):
@@ -260,7 +280,6 @@ def create_zuco_text_data(dataset):
     words_output_file = f"{output_path}/t2_words.csv"
     sentences_output_file = f"{output_path}/t2_sentences.csv"
 
-
     if path.isfile(words_output_file) and path.isfile(sentences_output_file):
         print(f"{output_path} task 2 files already exist - skipping creation")
     else:
@@ -283,6 +302,37 @@ def create_zuco_text_data(dataset):
         print(f"{output_path} task 3 files done")
 
 
+def create_provo_text_data(dataset):
+    output_path = create_output_dir(dataset, OUTPUT_DIR)
+    words_output_file = f"{output_path}/words.csv"
+    sentences_output_file = f"{output_path}/sentences.csv"
+
+    if path.isfile(words_output_file) and path.isfile(sentences_output_file):
+        print(f"{output_path} files already exist - skipping creation")
+    else:
+        df = pd.read_csv(f"{INPUT_DIR}{PROVO_DATASET}/Provo_Corpus-Predictability_Norms.csv", encoding='cp1252') \
+            .drop(["Response", "Response_Count", "Total_Response_Count", "Response_Proportion"], axis=1) \
+            .drop_duplicates()
+
+        sentences_df = df[["Text_ID", "Sentence_Number", "Text"]].drop_duplicates().reset_index(drop=True)
+        sentences_df.columns = ["PARAGRAPH_ID", "SENTENCE_ID", "SENTENCE"]
+        sentences_df["SENTENCE"] = sentences_df.apply(get_sentence, axis=1)
+        sentences_df["SENTENCE_ID"] = sentences_df["PARAGRAPH_ID"].astype(str) + \
+                                      "-" + sentences_df["SENTENCE_ID"].astype(str)
+        sentences_df.to_csv(sentences_output_file, index=False)
+
+        words_df = df[["Text_ID", "Sentence_Number", "Word_Unique_ID", "Word", "Word_Number"]] \
+            .drop_duplicates() \
+            .reset_index(drop=True)
+        words_df.columns = ["PARAGRAPH_ID", "SENTENCE_ID", "WORD_ID", "WORD", "Word_Number"]
+        words_df["SENTENCE_ID"] = words_df["PARAGRAPH_ID"].astype(str) + "-" + words_df["SENTENCE_ID"].astype(str)
+        new_rows = add_word_one(words_df, sentences_df)
+        words_df = pd.concat([words_df, new_rows]).sort_values(["PARAGRAPH_ID", "Word_Number"])
+        words_df = words_df[~words_df["WORD_ID"].duplicated()]
+        words_df.to_csv(words_output_file, index=False)
+        print(f"{output_path} files done")
+
+
 def main():
     if not path.isdir(path.join(INPUT_DIR, SOOD_DATASET)):
         print(f"Cannot find {SOOD_DATASET} - skipping creation")
@@ -303,6 +353,11 @@ def main():
         print(f"Cannot find {ZUCO_DATSET} - skipping creation")
     else:
         create_zuco_text_data(ZUCO_DATSET)
+
+    if not path.isdir(path.join(INPUT_DIR, PROVO_DATASET)):
+        print(f"Cannot find {PROVO_DATASET} - skipping creation")
+    else:
+        create_provo_text_data(PROVO_DATASET)
 
 
 if __name__ == "__main__":

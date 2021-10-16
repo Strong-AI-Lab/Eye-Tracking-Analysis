@@ -11,6 +11,7 @@ SOOD_DATASET = "sood_et_al_2020"
 SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
 ZUCO_DATSET = "ZuCo"
+PROVO_DATASET = "Provo"
 
 
 def modify_gaze_df(gaze_df, dataset):
@@ -22,12 +23,20 @@ def modify_gaze_df(gaze_df, dataset):
         gaze_df["PARAGRAPH_ID"] = gaze_df["Text_ID"]
         gaze_df["WORD_ID"] = gaze_df["PARAGRAPH_ID"].astype(str) + "-" + gaze_df["word_index"].astype(str)
 
+    if dataset == PROVO_DATASET:
+        gaze_df["PARAGRAPH_ID"] = gaze_df["Text_ID"]
+        gaze_df["WORD_ID"] = gaze_df["word_index"].astype(str)
+
     return gaze_df
 
 
-def modify_words_df(words_df):
+def modify_words_df(words_df, dataset):
     words_df["PARAGRAPH_ID"] = words_df["PARAGRAPH_ID"].astype(str)
-    words_df["INDEX"] = words_df["WORD_ID"].apply(lambda s: s.split("-")[-1]).astype(int)
+
+    if dataset == PROVO_DATASET:
+        words_df["INDEX"] = words_df["WORD_ID"].apply(lambda s: "".join(filter(str.isdigit, s))).astype(int)
+    else:
+        words_df["INDEX"] = words_df["WORD_ID"].apply(lambda s: s.split("-")[-1]).astype(int)
 
     return words_df
 
@@ -41,8 +50,8 @@ def merge_word_data(gaze_df, words_df, dataset):
         df = df.drop(["index", "Participant name", "Recording name", "Presented Stimulus name", "word_index", "word",
                       "PARAGRAPH_ID_x"], axis=1)
 
-    if dataset in [SARCASM_DATASET, ZUCO_DATSET]:
-        if dataset == ZUCO_DATSET:
+    if dataset in [SARCASM_DATASET, ZUCO_DATSET, PROVO_DATASET]:
+        if dataset in [ZUCO_DATSET, PROVO_DATASET]:
             df["Participant"] = df['Participant_ID']
         else:
             df["Participant"] = df['Participant_ID'].unique()[0]
@@ -61,7 +70,7 @@ def combine_dfs(gaze_df, words_df, dataset):
     dfs = []
     participant_col = ""
     gaze_df = modify_gaze_df(gaze_df, dataset)
-    words_df = modify_words_df(words_df)
+    words_df = modify_words_df(words_df, dataset)
 
     if dataset == SOOD_DATASET:
         participant_col = "Participant name"
@@ -99,13 +108,13 @@ def normalize_gaze_data(df, dataset, paragraph=False):
     if dataset == GECO_DATASET:
         participant_col = "PP_NR"
 
-    if dataset in [SARCASM_DATASET, SOOD_DATASET, ZUCO_DATSET]:
+    if dataset in [SARCASM_DATASET, SOOD_DATASET, ZUCO_DATSET, PROVO_DATASET]:
         participant_col = "Participant"
 
     if paragraph:
         normal_col = "PARAGRAPH_ID"
 
-        if dataset in [SARCASM_DATASET, SOOD_DATASET, ZUCO_DATSET]:
+        if dataset in [SARCASM_DATASET, SOOD_DATASET, ZUCO_DATSET, PROVO_DATASET]:
             normal_col = "PARAGRAPH_ID_y"
 
     for participant in df[participant_col].unique():
@@ -202,7 +211,7 @@ def normalize_geco_gaze_data(dataset):
         create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file)
 
 
-def normalize_geco_zuco_data(dataset):
+def normalize_zuco_gaze_data(dataset):
     output_path = create_output_dir(dataset, OUTPUT_DIR)
     sentence_output_file = f"{output_path}/normed_task1_sentences.csv"
     paragraph_output_file = f"{output_path}/normed_task1_paragraphs.csv"
@@ -213,7 +222,7 @@ def normalize_geco_zuco_data(dataset):
         gaze_df = pd.read_csv(f"{GAZE_DIR}{dataset}/t1_gaze_duration.csv")
         gaze_df = modify_gaze_df(gaze_df, dataset)
         words_df = pd.read_csv(f"{TEXT_DIR}{dataset}/t1_words.csv")
-        words_df = modify_words_df(words_df)
+        words_df = modify_words_df(words_df, dataset)
 
         df = merge_word_data(gaze_df, words_df, dataset)
         create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file)
@@ -227,7 +236,7 @@ def normalize_geco_zuco_data(dataset):
         gaze_df = pd.read_csv(f"{GAZE_DIR}{dataset}/t2_gaze_duration.csv")
         gaze_df = modify_gaze_df(gaze_df, dataset)
         words_df = pd.read_csv(f"{TEXT_DIR}{dataset}/t2_words.csv")
-        words_df = modify_words_df(words_df)
+        words_df = modify_words_df(words_df, dataset)
 
         df = merge_word_data(gaze_df, words_df, dataset)
         create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file)
@@ -241,7 +250,24 @@ def normalize_geco_zuco_data(dataset):
         gaze_df = pd.read_csv(f"{GAZE_DIR}{dataset}/t3_gaze_duration.csv")
         gaze_df = modify_gaze_df(gaze_df, dataset)
         words_df = pd.read_csv(f"{TEXT_DIR}{dataset}/t3_words.csv")
-        words_df = modify_words_df(words_df)
+        words_df = modify_words_df(words_df, dataset)
+
+        df = merge_word_data(gaze_df, words_df, dataset)
+        create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file)
+
+
+def normalize_provo_gaze_data(dataset):
+    output_path = create_output_dir(dataset, OUTPUT_DIR)
+    sentence_output_file = f"{output_path}/normed_sentences.csv"
+    paragraph_output_file = f"{output_path}/normed_paragraphs.csv"
+
+    if path.isfile(sentence_output_file) and path.isfile(paragraph_output_file):
+        print(f"{output_path} files already exist - skipping creation")
+    else:
+        gaze_df = pd.read_csv(f"{GAZE_DIR}{dataset}/gaze_durations.csv")
+        gaze_df = modify_gaze_df(gaze_df, dataset)
+        words_df = pd.read_csv(f"{TEXT_DIR}{dataset}/words.csv")
+        words_df = modify_words_df(words_df, dataset)
 
         df = merge_word_data(gaze_df, words_df, dataset)
         create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file)
@@ -266,7 +292,12 @@ def main():
     if not path.isdir(path.join(INPUT_DIR, ZUCO_DATSET)):
         print(f"Cannot find {ZUCO_DATSET} - skipping creation")
     else:
-        normalize_geco_zuco_data(ZUCO_DATSET)
+        normalize_zuco_gaze_data(ZUCO_DATSET)
+
+    if not path.isdir(path.join(INPUT_DIR, PROVO_DATASET)):
+        print(f"Cannot find {PROVO_DATASET} - skipping creation")
+    else:
+        normalize_provo_gaze_data(PROVO_DATASET)
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ SOOD_DATASET = "sood_et_al_2020"
 SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
 ZUCO_DATSET = "ZuCo"
+PROVO_DATASET = "Provo"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--data", default="GECO")
@@ -292,6 +293,13 @@ def control_extraction(model_name, dataset, special_tokens=True):
         sentence_file = f"{INPUT_DIR}{dataset}/t3_sentences.csv"
         word_file = f"{INPUT_DIR}{dataset}/t3_words.csv"
         output_file = f"{output_path}/task_3_{model_name.replace('/','-')}-{special_tokens}.csv"
+        run_extraction(model_name, dataset, sentence_file, word_file, output_file)
+
+    if dataset == PROVO_DATASET:
+        output_path = create_output_dir(dataset, OUTPUT_DIR)
+        sentence_file = f"{INPUT_DIR}{dataset}/sentences.csv"
+        word_file = f"{INPUT_DIR}{dataset}/words.csv"
+        output_file = f"{output_path}/{model_name.replace('/','-')}-{special_tokens}.csv"
         run_extraction(model_name, dataset, sentence_file, word_file, output_file)
 
 
