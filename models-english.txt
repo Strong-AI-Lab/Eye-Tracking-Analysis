@@ -1,3 +1,4 @@
+albert-base-v1
 allenai/longformer-base-4096
 bert-base-cased
 bert-base-multilingual-cased
@@ -10,6 +11,7 @@ facebook/bart-base
 facebook/bart-large
 google/bigbird-roberta-base
 google/bigbird-roberta-large
+google/pegasus-large
 google/reformer-crime-and-punishment
 microsoft/deberta-base
 microsoft/deberta-large
