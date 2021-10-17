@@ -17,6 +17,7 @@ distilbert-base-multilingual-cased
 facebook/bart-base
 facebook/bart-large
 facebook/muppet-roberta-base
+facebook/muppet-roberta-large
 google/bigbird-roberta-base
 google/bigbird-roberta-large
 google/fnet-base
