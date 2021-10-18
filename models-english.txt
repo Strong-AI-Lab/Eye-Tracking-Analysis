@@ -35,5 +35,7 @@ mwesner/reformer-clm
 roberta-base
 roberta-large
 squeezebert/squeezebert-uncased
+xlm-roberta-base
+xlm-roberta-large
 xlnet-base-cased
 xlnet-large-cased
