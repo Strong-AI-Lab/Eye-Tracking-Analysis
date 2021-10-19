@@ -38,6 +38,18 @@ def process_text(text_id, text):
     return text_dict, sentence_dict
 
 
+def convert_sentences_to_words(sentence):
+    sentence_dict = {}
+    words = sentence.split()
+    for i, word in enumerate(words):
+        sentence_dict[i+1] = word
+
+    words_df = pd.DataFrame.from_dict(sentence_dict, orient="index").reset_index()
+    words_df.columns = ["WORD_ID", "WORD"]
+
+    return words_df.reset_index()
+
+
 def create_text_dfs(data, text=None):
     if text is None:
         text_id = data.split("/")[-1][:-4]
@@ -342,15 +354,30 @@ def create_frank_text_data(dataset):
     if path.isfile(words_output_file) and path.isfile(sentences_output_file):
         print(f"{output_path} files already exist - skipping creation")
     else:
+        """
         words_df = pd.read_csv(f"{INPUT_DIR}{dataset}/words.csv").dropna()
         words_df["PARAGRAPH_ID"] = 0
         words_df["SENTENCE_ID"] = words_df["PARAGRAPH_ID"].astype(str) + "-" + words_df["SENTENCE_ID"].astype(str)
         words_df["WORD_ID"] = words_df["SENTENCE_ID"].astype(str) + "-" + words_df["WORD_ID"].astype(str)
         words_df.to_csv(words_output_file, index=False)
+        """
 
         sentences_df = pd.read_csv(f"{INPUT_DIR}{dataset}/sentences.csv")
         sentences_df["SENTENCE_ID"] = sentences_df["PARAGRAPH_ID"].astype(str) + "-" + sentences_df["SENTENCE_ID"].astype(str)
         sentences_df.to_csv(sentences_output_file, index=False)
+
+        word_dfs = []
+
+        for i, row in sentences_df.iterrows():
+            sentence = row["SENTENCE"]
+            word_df = convert_sentences_to_words(sentence)
+            word_df["PARAGRAPH_ID"] = 0
+            word_df["SENTENCE_ID"] = word_df["PARAGRAPH_ID"].astype(str) + "-" + str(i+1)
+            word_df["WORD_ID"] = word_df["SENTENCE_ID"].astype(str) + "-" + word_df["WORD_ID"].astype(str) + ".0"
+            word_dfs.append(word_df)
+
+        words_df = pd.concat(word_dfs)
+        words_df.to_csv(words_output_file, index=False)
         print(f"{output_path} files done")
 
 

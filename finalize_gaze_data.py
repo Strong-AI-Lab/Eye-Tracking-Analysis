@@ -42,7 +42,7 @@ def modify_words_df(words_df, dataset):
     if dataset == PROVO_DATASET:
         words_df["INDEX"] = words_df["WORD_ID"].apply(lambda s: "".join(filter(str.isdigit, s))).astype(int)
     elif dataset == FRANK_DATASET:
-        words_df["INDEX"] = words_df["WORD_ID"].apply(lambda s: s.split(".")[-1]).astype(int)
+        words_df["INDEX"] = words_df["WORD_ID"].apply(lambda s: int(s.split("-")[1])*100 + int(s.split("-")[-1].split(".")[0]))
     else:
         words_df["INDEX"] = words_df["WORD_ID"].apply(lambda s: s.split("-")[-1]).astype(int)
 
