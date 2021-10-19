@@ -12,6 +12,7 @@ SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
 ZUCO_DATSET = "ZuCo"
 PROVO_DATASET = "Provo"
+FRANK_DATASET = "Frank_et_al_2013"
 
 
 def get_gaze_data(filepath):
@@ -101,7 +102,6 @@ def create_sood_et_al_corr_table(dataset):
                          if "study_1" in file.name]
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
 
-
     output_path = create_output_dir(f"{dataset}/Study_2/", OUTPUT_DIR)
     gaze_data = "output/normalized_gaze_data/sood_et_al_2020/normed_study2_sentences.csv"
     transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)
@@ -109,13 +109,13 @@ def create_sood_et_al_corr_table(dataset):
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
 
 
-def create_mishra_sarcasm_corr_table(dataset):
+def create_corr_table(dataset):
     print(dataset)
     eye_col = "Fixation_Duration"
     transformer_datapath = f"{INPUT_DIR}{dataset}/"
 
     output_path = create_output_dir(f"{dataset}", OUTPUT_DIR)
-    gaze_data = "output/normalized_gaze_data/Mishra/Eye-tracking_and_SA-II_released_dataset/normed_sentences.csv"
+    gaze_data = f"output/normalized_gaze_data/{dataset}/normed_sentences.csv"
     transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)]
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
 
@@ -155,42 +155,23 @@ def create_zuco_corr_table(dataset):
     create_datasets(gaze_data, transformer_files, eye_col, output_path)
 
 
-def create_provo_corr_table(dataset):
-    print(dataset)
-    eye_col = "Fixation_Duration"
-    transformer_datapath = f"{INPUT_DIR}{dataset}/"
-
-    output_path = create_output_dir(f"{dataset}", OUTPUT_DIR)
-    gaze_data = "output/normalized_gaze_data/Provo/normed_sentences.csv"
-    transformer_files = [f"{transformer_datapath}{file.name}" for file in scandir(transformer_datapath)]
-    create_datasets(gaze_data, transformer_files, eye_col, output_path)
+def method_chooser(dataset):
+    if dataset == SOOD_DATASET:
+        create_sood_et_al_corr_table(dataset)
+    elif dataset in [SARCASM_DATASET, PROVO_DATASET, FRANK_DATASET]:
+        create_corr_table(dataset)
+    elif dataset == GECO_DATASET:
+        create_geco_corr_table(dataset)
+    elif dataset == ZUCO_DATSET:
+        create_zuco_corr_table(dataset)
 
 
 def main():
-    if not path.isdir(path.join(INPUT_DIR, SOOD_DATASET)):
-        print(f"Cannot find {SOOD_DATASET} - skipping creation")
-    else:
-        create_sood_et_al_corr_table(SOOD_DATASET)
-
-    if not path.isdir(path.join(INPUT_DIR, SARCASM_DATASET)):
-        print(f"Cannot find {SARCASM_DATASET} - skipping creation")
-    else:
-        create_mishra_sarcasm_corr_table(SARCASM_DATASET)
-
-    if not path.isdir(path.join(INPUT_DIR, GECO_DATASET)):
-        print(f"Cannot find {GECO_DATASET} - skipping creation")
-    else:
-        create_geco_corr_table(GECO_DATASET)
-
-    if not path.isdir(path.join(INPUT_DIR, ZUCO_DATSET)):
-        print(f"Cannot find {ZUCO_DATSET} - skipping creation")
-    else:
-        create_zuco_corr_table(ZUCO_DATSET)
-
-    if not path.isdir(path.join(INPUT_DIR, PROVO_DATASET)):
-        print(f"Cannot find {PROVO_DATASET} - skipping creation")
-    else:
-        create_provo_corr_table(PROVO_DATASET)
+    for dataset in [SOOD_DATASET, SARCASM_DATASET, GECO_DATASET, ZUCO_DATSET, PROVO_DATASET, FRANK_DATASET]:
+        if not path.isdir(path.join(INPUT_DIR, dataset)):
+            print(f"Cannot find {dataset} - skipping creation")
+        else:
+            method_chooser(dataset)
 
 
 if __name__ == "__main__":

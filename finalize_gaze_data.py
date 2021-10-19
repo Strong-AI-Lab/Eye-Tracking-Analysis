@@ -12,6 +12,7 @@ SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
 ZUCO_DATSET = "ZuCo"
 PROVO_DATASET = "Provo"
+FRANK_DATASET = "Frank_et_al_2013"
 
 
 def modify_gaze_df(gaze_df, dataset):
@@ -27,6 +28,11 @@ def modify_gaze_df(gaze_df, dataset):
         gaze_df["PARAGRAPH_ID"] = gaze_df["Text_ID"]
         gaze_df["WORD_ID"] = gaze_df["word_index"].astype(str)
 
+    if dataset == FRANK_DATASET:
+        gaze_df["PARAGRAPH_ID"] = 0
+        gaze_df["WORD_ID"] = gaze_df["PARAGRAPH_ID"].astype(str) + "-" + gaze_df["Text_ID"].astype(str) + "-" + \
+                             gaze_df["word_index"].astype(str)
+
     return gaze_df
 
 
@@ -35,6 +41,8 @@ def modify_words_df(words_df, dataset):
 
     if dataset == PROVO_DATASET:
         words_df["INDEX"] = words_df["WORD_ID"].apply(lambda s: "".join(filter(str.isdigit, s))).astype(int)
+    elif dataset == FRANK_DATASET:
+        words_df["INDEX"] = words_df["WORD_ID"].apply(lambda s: s.split(".")[-1]).astype(int)
     else:
         words_df["INDEX"] = words_df["WORD_ID"].apply(lambda s: s.split("-")[-1]).astype(int)
 
@@ -50,7 +58,7 @@ def merge_word_data(gaze_df, words_df, dataset):
         df = df.drop(["index", "Participant name", "Recording name", "Presented Stimulus name", "word_index", "word",
                       "PARAGRAPH_ID_x"], axis=1)
 
-    if dataset in [SARCASM_DATASET, ZUCO_DATSET, PROVO_DATASET]:
+    if dataset in [SARCASM_DATASET, ZUCO_DATSET, PROVO_DATASET, FRANK_DATASET]:
         if dataset in [ZUCO_DATSET, PROVO_DATASET]:
             df["Participant"] = df['Participant_ID']
         else:
@@ -60,7 +68,7 @@ def merge_word_data(gaze_df, words_df, dataset):
 
     df = df.sort_values("INDEX")
 
-    if dataset in [SARCASM_DATASET, SOOD_DATASET]:
+    if dataset in [SARCASM_DATASET, SOOD_DATASET, FRANK_DATASET]:
         df = df.iloc[:words_df.shape[0]]
 
     return df
@@ -75,7 +83,7 @@ def combine_dfs(gaze_df, words_df, dataset):
     if dataset == SOOD_DATASET:
         participant_col = "Participant name"
 
-    if dataset == SARCASM_DATASET:
+    if dataset in [SARCASM_DATASET, FRANK_DATASET]:
         participant_col = "Participant_ID"
 
     for paragraph_id in words_df["PARAGRAPH_ID"].unique():
@@ -84,11 +92,12 @@ def combine_dfs(gaze_df, words_df, dataset):
         words_mask = words_df["PARAGRAPH_ID"] == paragraph_id
         current_words = words_df[words_mask]
 
-        if dataset == SARCASM_DATASET:
+        if dataset in [SARCASM_DATASET, FRANK_DATASET]:
             paragraph_id = int(paragraph_id)
 
         for name in gaze_df[participant_col].unique():
             gaze_mask = (gaze_df[participant_col] == name) & (gaze_df["PARAGRAPH_ID"] == paragraph_id)
+
 
             if gaze_mask.sum() == 0:
                 continue
@@ -108,13 +117,13 @@ def normalize_gaze_data(df, dataset, paragraph=False):
     if dataset == GECO_DATASET:
         participant_col = "PP_NR"
 
-    if dataset in [SARCASM_DATASET, SOOD_DATASET, ZUCO_DATSET, PROVO_DATASET]:
+    if dataset in [SARCASM_DATASET, SOOD_DATASET, ZUCO_DATSET, PROVO_DATASET, FRANK_DATASET]:
         participant_col = "Participant"
 
     if paragraph:
         normal_col = "PARAGRAPH_ID"
 
-        if dataset in [SARCASM_DATASET, SOOD_DATASET, ZUCO_DATSET, PROVO_DATASET]:
+        if dataset in [SARCASM_DATASET, SOOD_DATASET, ZUCO_DATSET, PROVO_DATASET, FRANK_DATASET]:
             normal_col = "PARAGRAPH_ID_y"
 
     for participant in df[participant_col].unique():
@@ -273,31 +282,41 @@ def normalize_provo_gaze_data(dataset):
         create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file)
 
 
+def normalize_frank_gaze_data(dataset):
+    output_path = create_output_dir(dataset, OUTPUT_DIR)
+    sentence_output_file = f"{output_path}/normed_sentences.csv"
+    paragraph_output_file = f"{output_path}/normed_paragraphs.csv"
+
+    if path.isfile(sentence_output_file) and path.isfile(paragraph_output_file):
+        print(f"{output_path} files already exist - skipping creation")
+    else:
+        study_df = pd.read_csv(f"{GAZE_DIR}{dataset}/gaze_durations.csv")
+        study_words_df = pd.read_csv(f"{TEXT_DIR}{dataset}/words.csv")
+        df = combine_dfs(study_df, study_words_df, dataset)
+        create_normalized_files(df, dataset, sentence_output_file, paragraph_output_file)
+
+
+def method_chooser(dataset):
+    if dataset == SOOD_DATASET:
+        normalize_sood_et_al_gaze_data(dataset)
+    elif dataset == SARCASM_DATASET:
+        normalize_mishra_sarcasm_gaze_data(dataset)
+    elif dataset == GECO_DATASET:
+        normalize_geco_gaze_data(dataset)
+    elif dataset == ZUCO_DATSET:
+        normalize_zuco_gaze_data(dataset)
+    elif dataset == PROVO_DATASET:
+        normalize_provo_gaze_data(dataset)
+    elif dataset == FRANK_DATASET:
+        normalize_frank_gaze_data(dataset)
+
+
 def main():
-    if not path.isdir(path.join(INPUT_DIR, SOOD_DATASET)):
-        print(f"Cannot find {SOOD_DATASET} - skipping creation")
-    else:
-        normalize_sood_et_al_gaze_data(SOOD_DATASET)
-
-    if not path.isdir(path.join(INPUT_DIR, SARCASM_DATASET)):
-        print(f"Cannot find {SARCASM_DATASET} - skipping creation")
-    else:
-        normalize_mishra_sarcasm_gaze_data(SARCASM_DATASET)
-
-    if not path.isdir(path.join(INPUT_DIR, GECO_DATASET)):
-        print(f"Cannot find {GECO_DATASET} - skipping creation")
-    else:
-        normalize_geco_gaze_data(GECO_DATASET)
-
-    if not path.isdir(path.join(INPUT_DIR, ZUCO_DATSET)):
-        print(f"Cannot find {ZUCO_DATSET} - skipping creation")
-    else:
-        normalize_zuco_gaze_data(ZUCO_DATSET)
-
-    if not path.isdir(path.join(INPUT_DIR, PROVO_DATASET)):
-        print(f"Cannot find {PROVO_DATASET} - skipping creation")
-    else:
-        normalize_provo_gaze_data(PROVO_DATASET)
+    for dataset in [SOOD_DATASET, SARCASM_DATASET, GECO_DATASET, ZUCO_DATSET, PROVO_DATASET, FRANK_DATASET]:
+        if not path.isdir(path.join(INPUT_DIR, dataset)):
+            print(f"Cannot find {dataset} - skipping creation")
+        else:
+            method_chooser(dataset)
 
 
 if __name__ == "__main__":

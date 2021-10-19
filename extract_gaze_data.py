@@ -10,6 +10,7 @@ SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
 ZUCO_DATSET = "ZuCo"
 PROVO_DATASET = "Provo"
+FRANK_DATASET = "Frank_et_al_2013"
 
 
 def process_participant_gaze(file):
@@ -32,6 +33,10 @@ def process_participant_gaze(file):
 def create_gaze_dataset(dataset=None, files=None):
     dfs = []
     df = None
+
+    if dataset == FRANK_DATASET:
+        df = pd.read_csv("data/Frank_et_al_2013/gaze_duration.csv")
+        df = df.groupby(["Participant_ID", "Text_ID", "word_index", "Word"]).sum()['Fixation_Duration'].reset_index()
 
     if dataset == SARCASM_DATASET:
         df = pd.read_csv("data/Mishra/Eye-tracking_and_SA-II_released_dataset/Fixation_sequence.csv")
@@ -154,36 +159,44 @@ def create_provo_gaze_data(dataset):
                          encoding='cp1252',
                          usecols=["Participant_ID", "Text_ID", "Word_Unique_ID", "Word_Cleaned", "IA_DWELL_TIME"])
         df = df.dropna()
-        df.columns = ["Participant_ID","word_index","Text_ID","Word","Fixation_Duration"]
+        df.columns = ["Participant_ID", "word_index", "Text_ID", "Word", "Fixation_Duration"]
         df.to_csv(output_file, index=False)
         print(f"{output_file} done")
 
 
+def create_frank_gaze_data(dataset):
+    output_path = create_output_dir(dataset, OUTPUT_DIR)
+    output_file = f"{output_path}/gaze_durations.csv"
+
+    if path.isfile(output_file):
+        print(f"{output_file} already exists - skipping creation")
+    else:
+        df = create_gaze_dataset(dataset)
+        df.to_csv(output_file, index=False)
+        print(f"{output_file} done")
+
+
+def method_chooser(dataset):
+    if dataset == SOOD_DATASET:
+        create_sood_et_al_gaze_data(dataset)
+    elif dataset == SARCASM_DATASET:
+        create_mishra_sarcasm_gaze_data(dataset)
+    elif dataset == GECO_DATASET:
+        create_geco_gaze_data(dataset)
+    elif dataset == ZUCO_DATSET:
+        create_zuco_gaze_data(dataset)
+    elif dataset == PROVO_DATASET:
+        create_provo_gaze_data(dataset)
+    elif dataset == FRANK_DATASET:
+        create_frank_gaze_data(dataset)
+
+
 def main():
-    if not path.isdir(path.join(INPUT_DIR, SOOD_DATASET)):
-        print(f"Cannot find {SOOD_DATASET} - skipping creation")
-    else:
-        create_sood_et_al_gaze_data(SOOD_DATASET)
-
-    if not path.isdir(path.join(INPUT_DIR, SARCASM_DATASET)):
-        print(f"Cannot find {SARCASM_DATASET} - skipping creation")
-    else:
-        create_mishra_sarcasm_gaze_data(SARCASM_DATASET)
-
-    if not path.isdir(path.join(INPUT_DIR, GECO_DATASET)):
-        print(f"Cannot find {GECO_DATASET} - skipping creation")
-    else:
-        create_geco_gaze_data(GECO_DATASET)
-
-    if not path.isdir(path.join(INPUT_DIR, ZUCO_DATSET)):
-        print(f"Cannot find {ZUCO_DATSET} - skipping creation")
-    else:
-        create_zuco_gaze_data(ZUCO_DATSET)
-
-    if not path.isdir(path.join(INPUT_DIR, PROVO_DATASET)):
-        print(f"Cannot find {PROVO_DATASET} - skipping creation")
-    else:
-        create_provo_gaze_data(PROVO_DATASET)
+    for dataset in [SOOD_DATASET, SARCASM_DATASET, GECO_DATASET, ZUCO_DATSET, PROVO_DATASET, FRANK_DATASET]:
+        if not path.isdir(path.join(INPUT_DIR, dataset)):
+            print(f"Cannot find {dataset} - skipping creation")
+        else:
+            method_chooser(dataset)
 
 
 if __name__ == "__main__":

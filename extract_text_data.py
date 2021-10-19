@@ -14,6 +14,7 @@ SARCASM_DATASET = "Mishra/Eye-tracking_and_SA-II_released_dataset"
 GECO_DATASET = "GECO"
 ZUCO_DATSET = "ZuCo"
 PROVO_DATASET = "Provo"
+FRANK_DATASET = "Frank_et_al_2013"
 
 
 def process_text(text_id, text):
@@ -333,31 +334,47 @@ def create_provo_text_data(dataset):
         print(f"{output_path} files done")
 
 
+def create_frank_text_data(dataset):
+    output_path = create_output_dir(dataset, OUTPUT_DIR)
+    words_output_file = f"{output_path}/words.csv"
+    sentences_output_file = f"{output_path}/sentences.csv"
+
+    if path.isfile(words_output_file) and path.isfile(sentences_output_file):
+        print(f"{output_path} files already exist - skipping creation")
+    else:
+        words_df = pd.read_csv(f"{INPUT_DIR}{dataset}/words.csv").dropna()
+        words_df["PARAGRAPH_ID"] = 0
+        words_df["SENTENCE_ID"] = words_df["PARAGRAPH_ID"].astype(str) + "-" + words_df["SENTENCE_ID"].astype(str)
+        words_df["WORD_ID"] = words_df["SENTENCE_ID"].astype(str) + "-" + words_df["WORD_ID"].astype(str)
+        words_df.to_csv(words_output_file, index=False)
+
+        sentences_df = pd.read_csv(f"{INPUT_DIR}{dataset}/sentences.csv")
+        sentences_df["SENTENCE_ID"] = sentences_df["PARAGRAPH_ID"].astype(str) + "-" + sentences_df["SENTENCE_ID"].astype(str)
+        sentences_df.to_csv(sentences_output_file, index=False)
+        print(f"{output_path} files done")
+
+
+def method_chooser(dataset):
+    if dataset == SOOD_DATASET:
+        create_sood_et_al_text_data(dataset)
+    elif dataset == SARCASM_DATASET:
+        create_mishra_sarcasm_text_data(dataset)
+    elif dataset == GECO_DATASET:
+        create_geco_text_data(dataset)
+    elif dataset == ZUCO_DATSET:
+        create_zuco_text_data(dataset)
+    elif dataset == PROVO_DATASET:
+        create_provo_text_data(dataset)
+    elif dataset == FRANK_DATASET:
+        create_frank_text_data(dataset)
+
+
 def main():
-    if not path.isdir(path.join(INPUT_DIR, SOOD_DATASET)):
-        print(f"Cannot find {SOOD_DATASET} - skipping creation")
-    else:
-        create_sood_et_al_text_data(SOOD_DATASET)
-
-    if not path.isdir(path.join(INPUT_DIR, SARCASM_DATASET)):
-        print(f"Cannot find {SARCASM_DATASET} - skipping creation")
-    else:
-        create_mishra_sarcasm_text_data(SARCASM_DATASET)
-
-    if not path.isdir(path.join(INPUT_DIR, GECO_DATASET)):
-        print(f"Cannot find {GECO_DATASET} - skipping creation")
-    else:
-        create_geco_text_data(GECO_DATASET)
-
-    if not path.isdir(path.join(INPUT_DIR, ZUCO_DATSET)):
-        print(f"Cannot find {ZUCO_DATSET} - skipping creation")
-    else:
-        create_zuco_text_data(ZUCO_DATSET)
-
-    if not path.isdir(path.join(INPUT_DIR, PROVO_DATASET)):
-        print(f"Cannot find {PROVO_DATASET} - skipping creation")
-    else:
-        create_provo_text_data(PROVO_DATASET)
+    for dataset in [SOOD_DATASET, SARCASM_DATASET, GECO_DATASET, ZUCO_DATSET, PROVO_DATASET, FRANK_DATASET]:
+        if not path.isdir(path.join(INPUT_DIR, dataset)):
+            print(f"Cannot find {dataset} - skipping creation")
+        else:
+            method_chooser(dataset)
 
 
 if __name__ == "__main__":
