@@ -1,0 +1,22 @@
+,L1_attention-max_word-max_norm,L2_attention-max_word-max_norm,L3_attention-max_word-max_norm,L4_attention-max_word-max_norm,L5_attention-max_word-max_norm,L6_attention-max_word-max_norm,L7_attention-max_word-max_norm,L8_attention-max_word-max_norm,L9_attention-max_word-max_norm,L10_attention-max_word-max_norm,L11_attention-max_word-max_norm,L12_attention-max_word-max_norm,L13_attention-max_word-max_norm,L14_attention-max_word-max_norm,L15_attention-max_word-max_norm,L16_attention-max_word-max_norm,L17_attention-max_word-max_norm,L18_attention-max_word-max_norm,L19_attention-max_word-max_norm,L20_attention-max_word-max_norm,L21_attention-max_word-max_norm,L22_attention-max_word-max_norm,L23_attention-max_word-max_norm,L24_attention-max_word-max_norm
+albert-base-v2-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,
+bert-base-cased-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,
+albert-xxlarge-v2-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,
+bert-large-uncased-True p-val,0.0,2.40863707633963e-180,2.88705928534667e-192,0.0,3.25990965947279e-202,0.0,0.0,0.0,8.063242715223288e-235,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+albert-base-v1-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,
+xlnet-base-cased-True p-val,0.0,0.0,7.282721301869397e-268,7.880105682052896e-237,6.18839233613572e-210,0.0,0.0,6.27797501447343e-299,1.1460958476088973e-270,7.6142443586104485e-298,0.0,1.8196982406679913e-20,,,,,,,,,,,,
+distilbert-base-multilingual-cased-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,,,,,,,
+distilbert-base-uncased-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,,,,,,,
+bert-base-uncased-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,
+facebook-bart-base-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,,,,,,,
+albert-xlarge-v2-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+google-bigbird-roberta-large-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+roberta-large-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+allenai-longformer-base-4096-True p-val,1.0620418051218414e-39,1.0661134517657987e-108,2.6637869553912265e-118,7.930200780243311e-144,1.0548341114214698e-102,9.678328032242828e-98,2.477772500268953e-93,3.4355833509286356e-111,0.7718360769848255,0.3199705421980458,9.93689960013056e-38,9.551466129072399e-39,,,,,,,,,,,,
+roberta-base-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,
+bert-base-multilingual-cased-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,
+facebook-bart-large-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,
+google-bigbird-roberta-base-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,
+albert-large-v2-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+distilbert-base-cased-True p-val,0.0,0.0,0.0,0.0,0.0,0.0,,,,,,,,,,,,,,,,,,
+bert-large-cased-True p-val,0.0,0.0,5.0418176523473246e-57,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0

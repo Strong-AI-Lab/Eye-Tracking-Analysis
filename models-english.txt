@@ -3,6 +3,9 @@ albert-base-v2
 albert-large-v2
 albert-xlarge-v2
 albert-xxlarge-v2
+allenai-longformer-scico
+allenai-longformer-large-4096-finetuned-triviaqa
+allenai-longformer-base-4096
 bert-base-cased
 bert-base-multilingual-cased
 bert-base-uncased
