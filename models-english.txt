@@ -3,9 +3,6 @@ albert-base-v2
 albert-large-v2
 albert-xlarge-v2
 albert-xxlarge-v2
-allenai/longformer-base-4096
-allenai/longformer-large-4096-finetuned-triviaqa
-allenai/longformer-scico
 bert-base-cased
 bert-base-multilingual-cased
 bert-base-uncased
@@ -25,6 +22,10 @@ google/pegasus-large
 google/reformer-crime-and-punishment
 google/reformer-enwik8
 google/rembert
+gpt2
+gpt2-medium
+gpt2-large
+gpt2-xl
 microsoft/deberta-base
 microsoft/deberta-large
 microsoft/deberta-xlarge
@@ -32,6 +33,7 @@ microsoft/deberta-v2-xlarge
 microsoft/deberta-v2-xxlarge
 microsoft/prophetnet-large-uncased
 mwesner/reformer-clm
+openai-gpt
 roberta-base
 roberta-large
 squeezebert/squeezebert-uncased
